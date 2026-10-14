@@ -1,5 +1,19 @@
 # Solana Stock Database (SDB)
 
+
+<p align="center"><img src="docs/assets/hero.png" alt="Solana Stock Database home" width="900"></p>
+
+<p align="center"><a href="https://solanastockdatabase.com">Live site</a> &middot; <a href="docs/rpc-strategy.md">RPC strategy</a> &middot; <a href="bench/RESULTS.md">Benchmark</a> &middot; <a href="LICENSE">MIT</a></p>
+
+## What you get
+
+<p align="center"><img src="docs/assets/tokens.png" alt="Live token cards with backing asset logos" width="900"></p>
+
+- Live index of StonkFun memstocks with market cap, volume, holders and indexed payouts.
+- Stock cards for every backing asset (SPY, NVDA, GLD, AAPL and more).
+- Read-only HTTP API and MCP server for agents.
+- Runs on the Helius free plan with credit accounting per method.
+
 ## Overview
 
 SDB indexes Solana memstock and stock-token activity. It stores observations and history in a local SQLite database. It serves that data over REST and MCP.

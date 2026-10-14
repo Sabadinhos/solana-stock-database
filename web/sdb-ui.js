@@ -47,7 +47,7 @@
     NVDAx:{color:'#4DD8FF',mono:'NV',logo:'https://cdn.simpleicons.org/nvidia'}, SPYx:{color:'#F2D544',mono:'SP',logo:null},
     TSLAx:{color:'#FF6F91',mono:'TS',logo:'https://cdn.simpleicons.org/tesla'}, GMEx:{color:'#F08A3C',mono:'GM',logo:'https://cdn.simpleicons.org/gamejolt'},
     HOODx:{color:'#9A7BFF',mono:'HD',logo:'https://cdn.simpleicons.org/robinhood'}, MSTRx:{color:'#6C8CFF',mono:'MS',logo:'https://cdn.simpleicons.org/microstrategy'},
-    AAPLx:{color:'#B8C0CC',mono:'AA',logo:'https://cdn.simpleicons.org/apple'}, COINx:{color:'#00C2A8',mono:'CO',logo:'https://cdn.simpleicons.org/coinbase'},
+    AAPLx:{color:'#B8C0CC',mono:'AA',logo:'https://cdn.simpleicons.org/apple/ffffff'}, COINx:{color:'#00C2A8',mono:'CO',logo:'https://cdn.simpleicons.org/coinbase'},
     OPENAIx:{color:'#E36FC8',mono:'OA',logo:'https://cdn.simpleicons.org/openai'}, ANTHROPICx:{color:'#D97757',mono:'AN',logo:'https://cdn.simpleicons.org/anthropic'}
   };
   var ASSET_ALIASES = {NVDA:'NVDAx',NVDAX:'NVDAx',SPY:'SPYx',SPYX:'SPYx',TSLA:'TSLAx',TSLAX:'TSLAx',GME:'GMEx',GMEX:'GMEx',HOOD:'HOODx',HOODX:'HOODx',MSTR:'MSTRx',MSTRX:'MSTRx',AAPL:'AAPLx',AAPLX:'AAPLx',COIN:'COINx',COINX:'COINx',OPENAI:'OPENAIx',OPENAIX:'OPENAIx',ANTHROPIC:'ANTHROPICx',ANTHROPICX:'ANTHROPICx'};
@@ -416,7 +416,7 @@
         name: raw.name,
         mint: raw.mint,
         rewardAsset: raw.rewardAsset || raw.quote || raw.backing,
-        image: raw.image_url || raw.imageUrl || raw.image || null,
+        image: raw.image_url || (String(raw.symbol||'').toUpperCase()==='STONK'?'/stonk-mark.svg':null)||raw.imageUrl || raw.image,
         marketCap: raw.marketCap,
         paidOut: raw.paidOut,
         payoutUnit: raw.payoutUnit || null,

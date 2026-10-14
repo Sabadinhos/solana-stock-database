@@ -123,11 +123,11 @@ const ASSET_COLORS = {
 function assetColor(sym) { const key=String(sym||"").toUpperCase().replace(/X$/,""), m=ASSET_COLORS[key]; const dark=document.documentElement.dataset.theme==="dark"; if(m)return m[dark?"d":"l"]; const h=[...key].reduce((a,c)=>a+c.charCodeAt(0),0)%360; return dark?[`hsl(${h} 40% 16%)`,`hsl(${h} 70% 70%)`]:[`hsl(${h} 60% 92%)`,`hsl(${h} 55% 32%)`];}
 const ASSET_LOGOS = {
   NVDA: "nvidia", NVIDIA: "nvidia", SOL: "solana", ZEC: "zcash", ANTHROPIC: "anthropic",
-  AAPL: "apple", APPLE: "apple", MSFT: "microsoft", MICROSOFT: "microsoft", TSLA: "tesla",
+  AAPL: "apple/ffffff", APPLE: "apple", MSFT: "microsoft", MICROSOFT: "microsoft", TSLA: "tesla",
   TESLA: "tesla", HOOD: "robinhood", ROBINHOOD: "robinhood", META: "meta", AMAZON: "amazon",
   AMZN: "amazon", GOOGL: "google", GOOGLE: "google", COIN: "coinbase", COINBASE: "coinbase",
   GME: "gamestop", GAMESTOP: "gamestop", MCD: "mcdonalds", MCDONALDS: "mcdonalds",
-  QQQ: "nasdaq", SPY: "spdr", GLD: "spdr", PLTR: "palantir", JUP: "jupiter", WBTC: "wrappedbitcoin"
+  QQQ: "nasdaq", PLTR: "palantir", JUP: "jupiter", WBTC: "wrappedbitcoin"
 };
 function baseTicker(sym) {
   return String(sym || "").toUpperCase().replace(/X$/, "").replace(/^SPCX$/, "SPX");
@@ -959,7 +959,7 @@ function renderLive() {
       <p class="muted" style="font-size:13px;margin:0 0 10px">Claude, Cursor and Gemini read the same engine as the web. Add the server once, then ask in natural language.</p>
       <pre class="mono" style="background:var(--surface-2);padding:14px;border-radius:10px;overflow-x:auto;margin:0;white-space:pre-wrap;word-break:break-word">{"mcpServers": {"sdb": {"command": "python",
   "args": ["/path/to/mcp_server.py"],
-  "env": {"SDB_API_URL": "https://example.invalid"}}}}</pre>
+  "env": {"SDB_API_URL": "https://solanastockdatabase.com"}}}}</pre>
     </section>
 
     <section class="d-section">
@@ -1012,7 +1012,7 @@ function renderLanding() {
 
 function renderDocs(){
   beginDetail();
-  const mcpConfig = JSON.stringify({mcpServers:{sdb:{command:"python",args:["/path/to/mcp_server.py"],env:{SDB_API_URL:"https://example.invalid"}}}}, null, 2);
+  const mcpConfig = JSON.stringify({mcpServers:{sdb:{command:"python",args:["/path/to/mcp_server.py"],env:{SDB_API_URL:"https://solanastockdatabase.com"}}}}, null, 2);
   const tools = [
     ["search_tokens", "Search by name, symbol, or mint", "q, limit"], ["get_token", "Backing, yield, creator, and on-chain data", "mint"],
     ["get_creator", "Indexed creator history", "creator"], ["list_assets", "Underlying asset coverage", "none"],
@@ -1023,10 +1023,10 @@ function renderDocs(){
     <button class="back" onclick="location.hash=''">Back</button>
     <p class="eyebrow">Builder documentation</p><h2>Build on the same data engine</h2>
     <p class="muted docs-lead">SDB exposes the indexed read-only dataset through REST and MCP. The web, builders, and AI agents read the same snapshot-backed engine.</p>
-    <section class="docs-card docs-quick"><h3>REST quick start</h3><pre class="docs-code">curl https://example.invalid/api/stats</pre><button class="quiet-button" data-copy-doc="curl https://example.invalid/api/stats">Copy command</button><p class="muted">Free access: no key, latest indexed cycle, 30 requests per minute.</p></section>
+    <section class="docs-card docs-quick"><h3>REST quick start</h3><pre class="docs-code">curl https://solanastockdatabase.com/api/stats</pre><button class="quiet-button" data-copy-doc="curl https://solanastockdatabase.com/api/stats">Copy command</button><p class="muted">Free access: no key, latest indexed cycle, 30 requests per minute.</p></section>
     <div class="docs-grid">
       <section class="docs-card"><h3>Core REST endpoints</h3><p><code>GET /api/stats</code><br><code>GET /api/search?q=NVDA</code><br><code>GET /api/token/{mint}</code><br><code>GET /api/cards</code><br><code>GET /api/attention?days=7</code><br><code>GET /api/leaderboard/rendimento</code><br><code>GET /api/leaderboard/creators</code><br><code>GET /api/dbc/summary</code></p></section>
-      <section class="docs-card"><h3>MCP setup</h3><p>Download the inspectable stdio client, then point your MCP host at the public API.</p><pre class="docs-code">curl -O https://example.invalid/mcp</pre><pre class="docs-code">${esc(mcpConfig)}</pre><button class="quiet-button" data-copy-doc="${esc(mcpConfig)}">Copy config</button></section>
+      <section class="docs-card"><h3>MCP setup</h3><p>Download the inspectable stdio client, then point your MCP host at the public API.</p><pre class="docs-code">curl -O https://solanastockdatabase.com/mcp</pre><pre class="docs-code">${esc(mcpConfig)}</pre><button class="quiet-button" data-copy-doc="${esc(mcpConfig)}">Copy config</button></section>
       <section class="docs-card"><h3>Eight MCP tools</h3><div class="docs-tools">${tools.map(t=>`<div class="docs-tool"><code>${t[0]}</code><span>${t[1]}</span><small>${t[2]}</small></div>`).join("")}</div></section>
       <section class="docs-card"><h3>Data and methodology</h3><p>StonkFun is ingested every 15 minutes into SQLite history. Helius enriches selected records with read-only Solana evidence. Meteora DBC coverage is persisted from bounded RPC captures. Missing values remain missing; SDB does not provide buy or sell signals.</p><a class="quiet-link" href="#/live">See connection guide ↗</a></section>
       <section class="docs-card"><h3>Plans and limits</h3><p><strong>Free · $0</strong><br>Database-only snapshots, 30 req/min.</p><p><strong>Starter · $5/mo</strong><br>9,000 requests, on-demand refresh.</p><p><strong>Trader · $50/mo</strong><br>100,000 requests, full real-time access.</p></section>
