@@ -3,7 +3,7 @@
 
 <p align="center"><img src="docs/assets/hero.png" alt="Solana Stock Database home" width="900"></p>
 
-<p align="center"><a href="https://solanastockdatabase.com">Live site</a> &middot; <a href="docs/rpc-strategy.md">RPC strategy</a> &middot; <a href="bench/RESULTS.md">Benchmark</a> &middot; <a href="LICENSE">MIT</a></p>
+<p align="center"><a href="https://solanastockdatabase.com">Live site</a> &middot; <a href="docs/tutorial.md">Tutorial</a> &middot; <a href="docs/examples/README.md">Examples</a> &middot; <a href="docs/rpc-strategy.md">RPC strategy</a> &middot; <a href="bench/RESULTS.md">Benchmark</a> &middot; <a href="LICENSE">MIT</a></p>
 
 ## What you get
 

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sdb": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "env": {"SDB_API_URL": "https://solanastockdatabase.com"}
+    }
+  }
+}
