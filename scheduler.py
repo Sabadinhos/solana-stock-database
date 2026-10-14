@@ -19,6 +19,17 @@ PYTH = os.path.join(HERE, "pyth.py")
 DBC_COLLECT = os.path.join(HERE, "dbc_collect.py")
 
 
+def rpc_today():
+    """Today's RPC totals from data/rpc-stats.json, without secrets."""
+    try:
+        with open(os.path.join(DATA_DIR, "rpc-stats.json"), encoding="utf-8") as f:
+            day = json.load(f).get("days", {}).get(time.strftime("%Y-%m-%d", time.gmtime()), {})
+    except (OSError, ValueError):
+        return None
+    return {"calls": sum(v.get("calls", 0) for v in day.values()),
+            "credits": sum(v.get("credits", 0) for v in day.values())}
+
+
 def write_heartbeat(cycle, elapsed, status, error=None, steps=None):
     os.makedirs(os.path.dirname(HEARTBEAT_FILE), exist_ok=True)
     payload = {
@@ -29,6 +40,7 @@ def write_heartbeat(cycle, elapsed, status, error=None, steps=None):
         "status": status,
         "error": error,
         "steps": steps or {},
+        "rpcToday": rpc_today(),
     }
     directory = os.path.dirname(HEARTBEAT_FILE)
     fd, tmp = tempfile.mkstemp(prefix=".heartbeat-", suffix=".tmp", dir=directory)
@@ -46,6 +58,9 @@ def write_heartbeat(cycle, elapsed, status, error=None, steps=None):
 
 def run(path):
     name = os.path.basename(path)
+    if not os.path.exists(path):
+        print(f"[scheduler] {name} not present, skipped", flush=True)
+        return 0
     print(f"[scheduler] {name} ...", flush=True)
     started = time.time()
     command = ["bash", path] if path.endswith(".sh") else [sys.executable, path]

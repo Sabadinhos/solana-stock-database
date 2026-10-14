@@ -422,6 +422,16 @@ class Handler(BaseHTTPRequestHandler):
                 item = editorial.creator(conn, m.group(1))
                 return self._send(200, {"found": bool(item), "identity": item})
 
+            if path == "/api/rpc-stats":
+                stats_path = os.path.join(db.DATA_DIR, "rpc-stats.json")
+                try:
+                    with open(stats_path, encoding="utf-8") as f:
+                        doc = json.load(f)
+                except (OSError, ValueError):
+                    return self._send(200, {"days": {}, "runs": []})
+                days = dict(sorted(doc.get("days", {}).items())[-30:])
+                return self._send(200, {"days": days, "runs": doc.get("runs", [])[-50:]})
+
             if path == "/api/health":
                 heartbeat = os.path.join(db.DATA_DIR, "heartbeat.json")
                 if not os.path.isfile(heartbeat):

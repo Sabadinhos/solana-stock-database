@@ -62,6 +62,9 @@ TOOLS = [
      "inputSchema": _schema({
          "address": {"type": "string", "description": "endereço do pool"},
      }, ["address"])},
+    {"name": "get_rpc_stats",
+     "description": "RPC calls, estimated Helius credits, 429s and cache hits per method and per day.",
+     "inputSchema": _schema({}, [])},
     {"name": "get_news",
      "description": "Evidências editoriais com fonte original; vazio quando nenhum feed verificado está configurado.",
      "inputSchema": _schema({
@@ -132,6 +135,8 @@ def call_tool(name, args):
         return api_get(f"/api/token/{q(a['mint'])}/dbc?limit={a.get('limit', 20)}")
     if name == "get_dbc_pool":
         return api_get(f"/api/dbc/pool/{q(a['address'])}")
+    if name == "get_rpc_stats":
+        return api_get("/api/rpc-stats")
     if name == "get_news":
         path = f"/api/news?limit={a.get('limit', 30)}"
         if a.get('asset'):
