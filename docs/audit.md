@@ -56,7 +56,11 @@ Root has 40 entries. Files that do not belong at the root or need a decision:
 - `ingestor/openapi.json` is a one-line file of unclear purpose.
 - Source comments and docstrings are partly in Portuguese.
 
-## 5. Proposed next phases
+## 5. Status
+
+Items 1, 2, 3 (supply and pool), 5, 8, 9 and 10 are addressed on this branch. See `docs/rpc-strategy.md` and `bench/RESULTS.md`. The missing `disk_check.sh` is now reported as skipped instead of failing the cycle. Batching (item 4) was evaluated and left out because it does not reduce credits.
+
+## 6. Proposed next phases
 
 0B. Add a counting wrapper that only observes (method, status, latency) and run production unchanged for 24 h. Output `bench/baseline-production.json` with aggregates only.
 1. One RPC client for all callers: batching, per-method TTL cache, in-cycle dedupe, credit counter, `Retry-After`, jitter, circuit breaker, incremental signatures with `until`. Switch DBC to `getProgramAccountsV2` behind the existing flag. Expose counters in the heartbeat, `/api/rpc-stats` and MCP.

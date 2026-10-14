@@ -6,21 +6,13 @@ SDB indexes Solana memstock and stock-token activity. It stores observations and
 
 SDB is read-only. It is not a wallet or trading system.
 
-## Helius signals
+## How it uses Helius
 
-`helius.py` calls these Helius methods:
+SDB runs on the Helius free plan. The onchain step reads holders, supply, signatures and transactions for the top tokens by market cap. The Meteora DBC collector reads pool and config accounts with `getProgramAccountsV2`.
 
-- `getAsset`
-- `getTokenLargestAccounts`
-- `getTokenSupply`
-- `getTokenAccountsByOwner`
-- `getAccountInfo`
-- `getTokenAccountBalance`
-- `getBalance`
-- `getSignaturesForAddress`
-- `getTransaction`
+Signatures are read incrementally with a stored cursor, failed transactions are skipped, and pool owners refresh once a day. In the synthetic benchmark this cuts onchain credits by 71% at low activity and 29% at high activity, with no valid event lost. See [bench/RESULTS.md](bench/RESULTS.md) and [docs/rpc-strategy.md](docs/rpc-strategy.md).
 
-`onchain.py` stores largest-account and holder-concentration snapshots. It parses confirmed transactions for initialize, mint, burn, authority, and fee events. It also records the program that owns a pool account. SDB does not use Helius webhooks.
+Every run records calls and credits per method. Read them at `GET /api/rpc-stats` or with the MCP tool `get_rpc_stats`. SDB does not use Helius webhooks.
 
 ## Run locally
 
@@ -40,6 +32,7 @@ Collection is opt-in. Enable the `collection` Compose profile after adding provi
 Tests use synthetic data.
 
 ```sh
+python bench/synthetic.py
 python -m unittest discover -s tests -v
 npm --prefix collectors/meteora-dbc ci
 npm --prefix collectors/meteora-dbc test
