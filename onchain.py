@@ -1,19 +1,30 @@
-"""SDB – enriquecimento on-chain via Helius (somente leitura).
+"""SDB on-chain enrichment over Solana RPC (read-only).
 
-Enriquece um subconjunto prioritário (top tokens por market cap) com:
-  - holders  : maiores contas + concentração (getTokenLargestAccounts + getTokenSupply)
-  - eventos  : ações corporativas do mint (mint/burn/fee/authority) via getSignaturesForAddress
-  - pools    : existência do pool Raydium e seu programa (getAccountInfo)
+Enriches the top tokens by market cap with:
+  - holders: largest accounts and top-10 concentration (getTokenLargestAccounts, getTokenSupply)
+  - events: initialize, mint, burn, authority and fee actions (getSignaturesForAddress, getTransaction)
+  - pools: owning program of the pool account (getAccountInfo)
 
-Roda fora do caminho do usuário (nunca no request). Budget: top_n controla o
-custo em credits; começa pequeno e cresce.
+Credit strategy (default):
+  - signatures are read incrementally with `until` from a stored cursor per mint,
+    so a transaction is fetched at most once
+  - failed transactions are skipped, they cannot change supply or authority
+  - pool owner is refreshed once per POOL_TTL_HOURS
+Set SDB_ONCHAIN_LEGACY=1 to restore the previous full re-read for comparison.
 """
+import calendar
+import os
 import time
 
 import db
 import helius
 
-# tipos de instrução (Token / Token-2022, jsonParsed) -> classe de evento
+LEGACY = os.environ.get("SDB_ONCHAIN_LEGACY", "0") == "1"
+MAX_PAGES = int(os.environ.get("SDB_ONCHAIN_MAX_PAGES", "5"))
+POOL_TTL_HOURS = float(os.environ.get("SDB_POOL_TTL_HOURS", "24"))
+FAILURES = {"count": 0}
+
+# Token / Token-2022 parsed instruction types mapped to event classes
 _INIT = {"initializeMint", "initializeMint2", "initializeAccount"}
 _MINT = {"mintTo", "mintToChecked"}
 _BURN = {"burn", "burnChecked"}
@@ -22,8 +33,14 @@ _FEE = {"transferFeeExtension", "initializeTransferFeeConfig",
         "initializePermanentDelegate", "initializeNonTransferable"}
 
 
+def _inner(tx):
+    groups = list(((tx or {}).get("meta") or {}).get("innerInstructions") or [])
+    groups += ((tx or {}).get("transaction") or {}).get("message", {}).get("innerInstructions") or []
+    return groups
+
+
 def _classify(tx):
-    """Extrai as classes de ação corporativa de uma transação jsonParsed."""
+    """Return the corporate-action classes found in a jsonParsed transaction."""
     kinds = set()
     try:
         msg = tx.get("transaction", {}).get("message", {})
@@ -41,8 +58,8 @@ def _classify(tx):
                 kinds.add("authority")
             elif t in _FEE:
                 kinds.add("fee")
-        # instruções aninhadas (innerInstructions)
-        for inner in msg.get("innerInstructions", []):
+        # inner instructions live in meta for jsonParsed transactions
+        for inner in _inner(tx):
             for instr in inner.get("instructions", []):
                 t = (instr.get("parsed") or {}).get("type")
                 if t in _MINT:
@@ -56,6 +73,16 @@ def _classify(tx):
     except Exception:
         pass
     return kinds
+
+
+def _ensure_cursor_table(conn):
+    conn.execute("CREATE TABLE IF NOT EXISTS rpc_cursors ("
+                 "address TEXT PRIMARY KEY, last_signature TEXT NOT NULL, updated_at TEXT NOT NULL)")
+
+
+def _fail(exc):
+    FAILURES["count"] += 1
+    print(f"[onchain] {type(exc).__name__}: {str(exc)[:160]}", flush=True)
 
 
 def _enrich_holders(conn, mint, captured_at):
@@ -76,17 +103,17 @@ def _enrich_holders(conn, mint, captured_at):
             conn.execute(
                 "UPDATE tokens SET holder_top10_share=? WHERE mint=?",
                 (round(top10 / total, 4), mint))
-    except Exception:
-        pass
+    except Exception as exc:
+        _fail(exc)
 
 
 def _extract_burn_raw(tx):
-    """Soma dos valores raw das instruções burn/burnChecked numa transação jsonParsed."""
+    """Sum of raw burn amounts in a jsonParsed transaction."""
     total = 0
     try:
         msg = tx.get("transaction", {}).get("message", {})
         instrs = list(msg.get("instructions", []))
-        for inner in msg.get("innerInstructions", []):
+        for inner in _inner(tx):
             instrs += inner.get("instructions", [])
         for instr in instrs:
             p = instr.get("parsed") or {}
@@ -99,15 +126,37 @@ def _extract_burn_raw(tx):
     return total
 
 
+def _new_signatures(conn, mint, max_sigs):
+    """Signatures newer than the stored cursor, newest first."""
+    if LEGACY:
+        sigs = helius.get_signatures_for_address(mint, limit=max_sigs)
+        return sigs if isinstance(sigs, list) else []
+    row = conn.execute("SELECT last_signature FROM rpc_cursors WHERE address=?", (mint,)).fetchone()
+    until = row[0] if row else None
+    if not until:
+        sigs = helius.get_signatures_for_address(mint, limit=max_sigs)
+        return sigs if isinstance(sigs, list) else []
+    out, before = [], None
+    for _ in range(MAX_PAGES):
+        page = helius.get_signatures_for_address(mint, limit=max_sigs, before=before, until=until)
+        if not isinstance(page, list) or not page:
+            break
+        out.extend(page)
+        if len(page) < max_sigs:
+            break
+        before = page[-1].get("signature")
+    return out
+
+
 def _enrich_events(conn, mint, creator, max_sigs, captured_at):
     try:
-        sigs = helius.get_signatures_for_address(mint, limit=max_sigs)
-        if not isinstance(sigs, list):
-            return
+        sigs = _new_signatures(conn, mint, max_sigs)
         decimals = None
         for s in sigs:
             sig = s.get("signature")
             if not sig:
+                continue
+            if not LEGACY and s.get("err") is not None:
                 continue
             tx = helius.get_transaction(sig)
             if not tx:
@@ -128,27 +177,47 @@ def _enrich_events(conn, mint, creator, max_sigs, captured_at):
                     "(mint, signature, amount_raw, decimals, amount_ui, captured_at) "
                     "VALUES (?,?,?,?,?,?)",
                     (mint, sig, burn_raw, decimals, amount_ui, captured_at))
-    except Exception:
-        pass
+        if sigs and not LEGACY:
+            conn.execute(
+                "INSERT INTO rpc_cursors (address, last_signature, updated_at) VALUES (?,?,?) "
+                "ON CONFLICT(address) DO UPDATE SET last_signature=excluded.last_signature, "
+                "updated_at=excluded.updated_at",
+                (mint, sigs[0]["signature"], captured_at))
+    except Exception as exc:
+        _fail(exc)
+
+
+def _pool_is_fresh(conn, mint, pool):
+    if LEGACY:
+        return False
+    row = conn.execute("SELECT captured_at FROM pools WHERE mint=? AND pool=?", (mint, pool)).fetchone()
+    if not row or not row[0]:
+        return False
+    try:
+        age = time.time() - calendar.timegm(time.strptime(row[0], "%Y-%m-%dT%H:%M:%SZ"))
+    except ValueError:
+        return False
+    return age < POOL_TTL_HOURS * 3600
 
 
 def _enrich_pool(conn, mint, pool, captured_at):
+    if _pool_is_fresh(conn, mint, pool):
+        return
     try:
         info = helius.get_account_info(pool)
         v = (info or {}).get("value")
         if not v:
             return
-        owner = v.get("owner")
         conn.execute(
-            "INSERT OR REPLACE INTO pools (mint, pool, program, captured_at) "
-            "VALUES (?,?,?,?)",
-            (mint, pool, owner, captured_at))
-    except Exception:
-        pass
+            "INSERT OR REPLACE INTO pools (mint, pool, program, captured_at) VALUES (?,?,?,?)",
+            (mint, pool, v.get("owner"), captured_at))
+    except Exception as exc:
+        _fail(exc)
 
 
 def enrich(conn, top_n=100, max_dev_sigs=20):
-    """Enriquece os top_n tokens por market cap. Incremental: UPSERT, nunca destrói."""
+    """Enrich the top_n tokens by market cap. Incremental upserts, never deletes."""
+    _ensure_cursor_table(conn)
     captured_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     rows = conn.execute(
         "SELECT mint, creator, pool FROM tokens "
@@ -161,12 +230,13 @@ def enrich(conn, top_n=100, max_dev_sigs=20):
         _enrich_events(conn, mint, creator, max_dev_sigs, captured_at)
         if pool:
             _enrich_pool(conn, mint, pool, captured_at)
-    conn.commit()
+        conn.commit()
     return len(rows)
 
 
 def enrich_token(conn, mint, max_dev_sigs=20):
-    """Enriquecimento on-chain sob demanda de UM token (usado pelo /refresh, tier pago)."""
+    """On-demand enrichment of one token, used by /api/token/{mint}/refresh."""
+    _ensure_cursor_table(conn)
     row = conn.execute(
         "SELECT creator, pool FROM tokens WHERE mint=?", (mint,)).fetchone()
     if not row:
@@ -184,12 +254,11 @@ if __name__ == "__main__":
     import sys
     conn = db.connect()
     db.init_db(conn)
-    top = int(sys.argv[1]) if len(sys.argv) > 1 else 100
+    top = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get("SDB_ONCHAIN_TOP_N", "100"))
     t0 = time.time()
     n = enrich(conn, top_n=top)
-    h = conn.execute("SELECT COUNT(*) FROM holders").fetchone()[0]
-    e = conn.execute("SELECT COUNT(*) FROM token_events").fetchone()[0]
-    p = conn.execute("SELECT COUNT(*) FROM pools").fetchone()[0]
-    print(f"enriquecidos {n} tokens em {time.time()-t0:.0f}s | "
-          f"holders={h} eventos={e} pools={p}")
+    stats = helius.snapshot()["total"]
+    print(f"enriched {n} tokens in {time.time()-t0:.0f}s | rpc calls={stats['calls']} "
+          f"credits={stats['credits']} cache_hits={stats['cacheHits']} failures={FAILURES['count']}")
+    helius.flush("onchain")
     conn.close()
