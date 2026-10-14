@@ -7,7 +7,7 @@ const { createDbcProgram, DynamicBondingCurveIdl } = require('@meteora-ag/dynami
 const PROGRAM_ID = 'dbcij3LWUppWqq96dh6gJWwBifmcGfLSB5D4DuSMaqN';
 const ENVELOPE_VERSION = 1;
 const DEFAULTS = Object.freeze({ maxQuotes: 16, maxConfigs: 1000, maxPools: 5000, maxRpcRequests: 1200,
-  deadlineMs: 600000, concurrency: 1, retries: 5, baseBackoffMs: 1000, pageSize: 100, maxPages: 20 });
+  deadlineMs: 600000, concurrency: 1, retries: 5, baseBackoffMs: 1000, pageSize: 1000, maxPages: 50 });
 const DISCRIMINATORS = Object.fromEntries(DynamicBondingCurveIdl.accounts.map(a => [a.name, Buffer.from(a.discriminator)]));
 
 function scalar(v) {
@@ -80,7 +80,7 @@ function normalizePage(result) {
   if (!Array.isArray(rows)) throw new Error(`invalid paginated account response: ${JSON.stringify(Object.keys(page || {}))}`);
   return {rows, paginationKey: page?.paginationKey || page?.pagination_key || result?.paginationKey || result?.pagination_key || null};
 }
-async function collect({rpcUrl, quotes, limits=parseLimits(), now=()=>new Date().toISOString(), rpcMethod=process.env.DBC_RPC_METHOD || 'getProgramAccounts'}) {
+async function collect({rpcUrl, quotes, limits=parseLimits(), now=()=>new Date().toISOString(), rpcMethod=process.env.DBC_RPC_METHOD || 'getProgramAccountsV2'}) {
   if (!rpcUrl || !/^https?:\/\//.test(rpcUrl)) throw new Error('DBC_RPC_URL must be an http(s) URL');
   if (quotes.length > limits.maxQuotes) throw new Error('quote limit exceeded');
   const rpc = new Rpc(rpcUrl, limits); const fakeConnection = { commitment:'confirmed' }; const {program}=createDbcProgram(fakeConnection);
@@ -101,11 +101,11 @@ async function collect({rpcUrl, quotes, limits=parseLimits(), now=()=>new Date()
       const rows = page.rows;
       all.push(...rows);
       const next = page.paginationKey;
-      if (rpcMethod !== 'getProgramAccountsV2' || !next || rows.length === 0) break;
+      if (rpcMethod !== 'getProgramAccountsV2' || !next || rows.length === 0) return all;
       if (next === paginationKey) throw new Error('pagination cursor did not advance');
       paginationKey = next;
     }
-    return all;
+    throw new Error('page limit reached before the account list ended');
   }
   const startedAt=now(); const slotResult=await rpc.call('getSlot',[{commitment:'confirmed'}]); const slot=String(slotResult);
   const configs=[]; const configSeen=new Set();

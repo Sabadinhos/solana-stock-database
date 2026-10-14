@@ -50,6 +50,13 @@ def main():
     conn = db.connect()
     try:
         run_id = ingest(conn, payload)
+        import helius
+        method = payload.get("rpcMethod", "getProgramAccounts")
+        requests = int(payload.get("stats", {}).get("rpcRequests", 0))
+        if requests:
+            helius.record_external("getSlot", 1)
+            helius.record_external(method, requests - 1)
+            helius.flush("dbc")
         print(json.dumps({"ok": True, "runId": run_id, "stats": payload["stats"]}))
     finally:
         conn.close()

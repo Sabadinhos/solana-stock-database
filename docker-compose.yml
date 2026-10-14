@@ -26,6 +26,7 @@ services:
       SDB_DATA_DIR: /app/data
       DBC_ENABLED: "1"
       DBC_EVERY_CYCLES: "6"
+      DBC_RPC_METHOD: getProgramAccountsV2
       SCHEDULE_SEC: "900"
     volumes:
       - sdb_data:/app/data
