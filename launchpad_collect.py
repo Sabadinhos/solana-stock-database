@@ -73,30 +73,6 @@ def _rpc(url, method, params, timeout=DEFAULT_TIMEOUT):
 
 
 
-def collect_program(url, slug, program_id, limit=DEFAULT_LIMIT, before=None, timeout=DEFAULT_TIMEOUT):
-    validate_source(slug)
-    validate_program_id(program_id)
-    if not isinstance(limit, int) or not 1 <= limit <= MAX_LIMIT:
-        raise ValueError("limit must be between 1 and 1000")
-    params = [program_id, {"limit": limit, "commitment": "confirmed"}]
-    if before:
-        params[1]["before"] = before
-    rows = _rpc(url, "getSignaturesForAddress", params, timeout)
-    if not isinstance(rows, list):
-        raise CollectionError("RPC returned an invalid signature list")
-    captured = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    return [{
-        "source": slug,
-        "programId": program_id,
-        "signature": row.get("signature"),
-        "slot": row.get("slot"),
-        "blockTime": row.get("blockTime"),
-        "err": row.get("err"),
-        "confirmationStatus": row.get("confirmationStatus"),
-        "capturedAt": captured,
-    } for row in rows if isinstance(row, dict) and row.get("signature")]
-
-
 class CollectionError(RuntimeError):
     pass
 
