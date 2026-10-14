@@ -189,7 +189,7 @@ def creator_x(conn, creator):
     return {
         "verified": status == "verified",
         "status": status,
-        "note": "X accounts linked by this wallet's tokens. Association only — not proof of ownership.",
+        "note": "X accounts linked by this wallet's tokens. Association only · not proof of ownership.",
         "dominant": top,
         "dominantShare": share,
         "linkedCount": total,

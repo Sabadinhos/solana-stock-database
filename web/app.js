@@ -27,32 +27,32 @@ const homeBento = $("#home-bento");
 
 const fmt = {
   usd(n) {
-    if (n == null) return "—";
+    if (n == null) return "-";
     if (Math.abs(n) >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
     if (Math.abs(n) >= 1e6) return "$" + (n / 1e6).toFixed(2) + "M";
     if (Math.abs(n) >= 1e3) return "$" + (n / 1e3).toFixed(1) + "K";
     return "$" + n.toFixed(2);
   },
   tok(n) {
-    if (n == null) return "—";
+    if (n == null) return "-";
     if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
     if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
     if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
     return n.toFixed(2);
   },
-  int(n) { return n == null ? "—" : n.toLocaleString("en-US"); },
+  int(n) { return n == null ? "-" : n.toLocaleString("en-US"); },
   bps(n) { return n == null ? "0%" : (n / 100).toFixed(1) + "%"; },
   pct(n) {
-    if (n == null) return "—";
+    if (n == null) return "-";
     return (n >= 0 ? "+" : "") + n.toFixed(1) + "%";
   },
-  date(s) { return s ? s.slice(0, 10) : "—"; },
+  date(s) { return s ? s.slice(0, 10) : "-"; },
   stock(n) {
-    if (n == null) return "—";
+    if (n == null) return "-";
     return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   },
   price(n) {
-    if (n == null) return "—";
+    if (n == null) return "-";
     if (n === 0) return "$0";
     if (n < 0.000001) return "$" + n.toFixed(10);
     if (n < 0.001) return "$" + n.toFixed(8);
@@ -142,8 +142,8 @@ function assetChip(sym) {
   const logo = assetLogoUrl(sym);
   const icon = logo ? `<span class="asset-logo-wrap"><img class="asset-logo" src="${logo}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span class="asset-logo-fallback" aria-hidden="true">${esc(String(sym||"?").slice(0,2).toUpperCase())}</span></span>` : `<span class="asset-logo-fallback" aria-hidden="true">${esc(String(sym||"?").slice(0,2).toUpperCase())}</span>`;
   const ticker = baseTicker(sym);
-  const badge = `<span class="asset-cap-badge"><span><small>Stock</small><b class="cap-stock" data-ticker="${esc(ticker)}">—</b></span><span><small>Crypto</small><b class="cap-crypto" data-quote="${esc(sym || "")}">—</b></span></span>`;
-  return `<span class="asset-chip" style="--asset-color:${bg};--asset-ink:${ink}">${icon}<span>${esc(sym||"—")}</span>${badge}</span>`;
+  const badge = `<span class="asset-cap-badge"><span><small>Stock</small><b class="cap-stock" data-ticker="${esc(ticker)}">-</b></span><span><small>Crypto</small><b class="cap-crypto" data-quote="${esc(sym || "")}">-</b></span></span>`;
+  return `<span class="asset-chip" style="--asset-color:${bg};--asset-ink:${ink}">${icon}<span>${esc(sym||"-")}</span>${badge}</span>`;
 }
 function tokenIcon(mint, symbol, image, cls="token-icon") {
   const fallback = `https://www.stonkfun.xyz/api/asset/quote-logo/${encodeURIComponent(mint || "")}`;
@@ -177,7 +177,7 @@ function copyText(txt, btn) {
 function statValue(key, c) {
   switch (key) {
     case "mc": return { label: "MC", value: fmt.usd(c.market_cap_usd), tri: c.price_change_24h };
-    case "paid": return { label: "Paid out (in " + (c.terminal || "—") + ")", value: fmt.tok(c.distributed_tokens) };
+    case "paid": return { label: "Paid out (in " + (c.terminal || "-") + ")", value: fmt.tok(c.distributed_tokens) };
     case "tax": return { label: "Stacked tax", value: fmt.bps(c.stacked_tax_bps) };
     case "volume": return { label: "Volume 24h", value: fmt.usd(c.volume_24h_usd) };
     case "fdv": return { label: "FDV", value: fmt.usd(c.fdv_usd) };
@@ -186,7 +186,7 @@ function statValue(key, c) {
     case "payouts": return { label: "Payouts", value: fmt.int(c.payout_count) };
     case "change": return { label: "Change 24h", value: fmt.pct(c.price_change_24h), tri: c.price_change_24h };
     case "peak": return { label: "Peak MC", value: fmt.usd(c.peak_market_cap_usd) };
-    default: return { label: "", value: "—" };
+    default: return { label: "", value: "-" };
   }
 }
 
@@ -197,11 +197,11 @@ function cardHtml(c) {
   }).join("");
   return `<article class="card" role="listitem" tabindex="0" data-mint="${esc(c.mint)}" aria-label="${esc(c.symbol || c.mint)}">
     <div class="card-icon">${tokenIcon(c.mint, c.symbol, c.image_url, "token-icon card-token-icon")}</div>
-    <div class="card-symbol">${esc(c.symbol) || "—"}</div>
+    <div class="card-symbol">${esc(c.symbol) || "-"}</div>
     <div class="card-name">${esc(c.name) || ""}</div>
     ${contractChip(c.mint)}
     <div class="card-stats">${stats}</div>
-    <div class="card-foot">Depth ${c.depth ?? "—"} · Last payout: ${fmt.date(c.last_payout_at)}</div>
+    <div class="card-foot">Depth ${c.depth ?? "-"} · Last payout: ${fmt.date(c.last_payout_at)}</div>
   </article>`;
 }
 
@@ -412,12 +412,12 @@ function advancedHtml(on) {
     `${shortAddr(h.owner)} ${(h.pct * 100).toFixed(1)}%`).join("<br>");
   return `
     <section class="d-section">
-      <h3>Advanced (on-chain)</h3>
+      <h3>Advanced (onchain)</h3>
       <div class="m-grid">
-        ${metric("Holder top-10 share", on.holderTop10Share != null ? (on.holderTop10Share * 100).toFixed(1) + "%" : "—")}
-        ${metric("On-chain events", ev || "none")}
-        ${metric("Pool program", on.pool ? shortAddr(on.pool.program) : "—")}
-        ${metric("Burn events", on.burn ? fmt.int(on.burn.burnEvents) : "—")}
+        ${metric("Holder top-10 share", on.holderTop10Share != null ? (on.holderTop10Share * 100).toFixed(1) + "%" : "-")}
+        ${metric("Onchain events", ev || "none")}
+        ${metric("Pool program", on.pool ? shortAddr(on.pool.program) : "-")}
+        ${metric("Burn events", on.burn ? fmt.int(on.burn.burnEvents) : "-")}
       </div>
       ${holders ? `<div class="audit-sub"><h4>Top holders</h4><p class="mono">${holders}</p></div>` : ""}
     </section>`;
@@ -490,7 +490,7 @@ function auditHtml(audit, portfolio) {
       chg = `<p class="muted note">No config changes since launch (fee, quote, mode).</p>`;
     }
     const mins = minutesBetween(l.createdAt, cu.graduatedAt);
-    const gradSub = cu.graduatedAt ? `graduated in ${mins != null ? mins : "—"} min` : "";
+    const gradSub = cu.graduatedAt ? `graduated in ${mins != null ? mins : "-"} min` : "";
     subs.push(`
       <div class="audit-sub">
         <h4>This token</h4>
@@ -559,15 +559,15 @@ async function renderToken(mint) {
   const t = d.token, r = d.rewards, c = d.creator, au = d.audit, pf = d.portfolio;
   const on = d.onchain || {};
   const decomposition = d.decomposition;
-  const decompositionHtml = decomposition ? `<section class="d-section" data-sec="market"><h3>Return decomposition</h3><div class="m-grid">${metric("Token in USD", fmt.pct(decomposition.tokenReturnUsd))}${metric("${esc(decomposition.terminal)} terminal", fmt.pct(decomposition.terminalReturn))}${metric("Relative to terminal", fmt.pct(decomposition.relativeReturn), decomposition.points + " aligned points")}</div><p class="muted">${decomposition.terminalStale ? "Terminal market closed / last observation is stale." : "Terminal price series is current within the indexed window."}</p></section>` : `<section class="d-section" data-sec="market"><h3>Return decomposition</h3><p class="muted">No persisted terminal price series is available yet. Pyth collection is optional and does not use fabricated values.</p></section>`;
+  const decompositionHtml = decomposition ? `<section class="d-section" data-sec="market"><h3>Return decomposition</h3><div class="m-grid">${metric("Token in USD", fmt.pct(decomposition.tokenReturnUsd))}${metric("${esc(decomposition.terminal)} terminal", fmt.pct(decomposition.terminalReturn))}${metric("Relative to terminal", fmt.pct(decomposition.relativeReturn), decomposition.points + " aligned points")}</div><p class="muted">${decomposition.terminalStale ? "Terminal market closed / last observation is stale." : "Terminal price series is current within the indexed window."}</p></section>` : `<section class="d-section" data-sec="market"><h3>Return decomposition</h3><p class="muted">No price history yet.</p></section>`;
   const img = tokenIcon(t.mint,t.symbol,t.image_url,"token-icon hero-token-icon");
   const change = t.market.priceChange24h;
   const chgCls = change == null ? "" : (change >= 0 ? "pos" : "neg");
-  const chgTxt = change == null ? "—" : ((change >= 0 ? "▲ " : "▼ ") + Math.abs(change).toFixed(1) + "%");
+  const chgTxt = change == null ? "-" : ((change >= 0 ? "▲ " : "▼ ") + Math.abs(change).toFixed(1) + "%");
   const turnover = (t.market.volume24hUsd && t.market.marketCapUsd)
     ? (t.market.volume24hUsd / t.market.marketCapUsd * 100) : null;
-  const gradPct = t.graduationProgress != null ? (t.graduationProgress * 100).toFixed(1) + "%" : "—";
-  const simulator = r && t.quoteOnlyFees ? `<section class="d-section yield-simulator" data-sec="yield"><h3>Fee distribution simulator</h3><p class="muted">Estimate how many ${esc(t.terminal.symbol)} tokens a holding could receive from current volume fees. This is not a confirmed airdrop, guarantee, or recommendation.</p><div class="simulator-fields"><label>Amount held (USD)<input id="token-sim-amount" class="num" inputmode="decimal" value="10" min="0" step="0.01"></label></div><div class="m-grid"><div class="metric"><span class="m-k">24h estimate</span><strong class="m-v" id="token-sim-24-usd">—</strong><small id="token-sim-24-tokens">—</small></div><div class="metric"><span class="m-k">30-day estimate</span><strong class="m-v" id="token-sim-30-usd">—</strong><small id="token-sim-30-tokens">—</small></div><div class="metric"><span class="m-k">1-year estimate</span><strong class="m-v" id="token-sim-365-usd">—</strong><small id="token-sim-365-tokens">—</small></div></div><p class="calc-foot">Formula: volume 24h × stacked fee × (your holding ÷ market cap). Values are estimates from indexed data, not confirmed airdrops. The API does not provide a minimum holding threshold.</p></section>` : "";
+  const gradPct = t.graduationProgress != null ? (t.graduationProgress * 100).toFixed(1) + "%" : "-";
+  const simulator = r && t.quoteOnlyFees ? `<section class="d-section yield-simulator" data-sec="yield"><h3>Fee distribution simulator</h3><p class="muted">Estimated ${esc(t.terminal.symbol)} from current fees.</p><div class="simulator-fields"><label>Amount held (USD)<input id="token-sim-amount" class="num" inputmode="decimal" value="10" min="0" step="0.01"></label></div><div class="m-grid"><div class="metric"><span class="m-k">24h estimate</span><strong class="m-v" id="token-sim-24-usd">-</strong><small id="token-sim-24-tokens">-</small></div><div class="metric"><span class="m-k">30-day estimate</span><strong class="m-v" id="token-sim-30-usd">-</strong><small id="token-sim-30-tokens">-</small></div><div class="metric"><span class="m-k">1-year estimate</span><strong class="m-v" id="token-sim-365-usd">-</strong><small id="token-sim-365-tokens">-</small></div></div><p class="calc-foot">Volume 24h × stacked fee × (holding ÷ market cap). Estimate.</p></section>` : "";
 
   const chainHtml = `<div class="chain">
     <div class="node"><div class="n-s">${esc(t.symbol)}</div></div>
@@ -591,7 +591,7 @@ async function renderToken(mint) {
     </div>
     <p class="mono">${t.mint}</p>
     <div class="head-actions">${socialLinks(t)}${shortcutRow(t.mint)}</div>
-    <section class="wiki-intro"><div><span class="section-kicker">Token encyclopedia</span><h3>About ${esc(t.symbol)}</h3><p>${esc(t.name || t.symbol)} is an indexed Solana token paired with ${esc(t.terminal.symbol)}. SDB records its market state, payout history, creator activity and backing chain from public API and on-chain evidence. This page is a factual snapshot, not an endorsement.</p></div><aside class="wiki-infobox"><div class="wiki-infobox-title">${img}${esc(t.symbol)}</div><div><b>Network</b><span>Solana</span></div><div><b>Launchpad</b><span>${esc(t.launchpad || "Unknown")}</span></div><div><b>Status</b><span>${statusPill(t.status)}</span></div><div><b>Quote asset</b><span>${assetChip(t.terminal.symbol)}</span></div><div><b>Created</b><span>${fmt.date(t.createdAt)}</span></div></aside></section>
+    <section class="wiki-intro"><div><span class="section-kicker">Token encyclopedia</span><h3>About ${esc(t.symbol)}</h3><p>${esc(t.name || t.symbol)} is an indexed Solana token paired with ${esc(t.terminal.symbol)}. SDB records its market state, payout history, creator activity and backing chain from public API and onchain evidence. This page is a factual snapshot, not an endorsement.</p></div><aside class="wiki-infobox"><div class="wiki-infobox-title">${img}${esc(t.symbol)}</div><div><b>Network</b><span>Solana</span></div><div><b>Launchpad</b><span>${esc(t.launchpad || "Unknown")}</span></div><div><b>Status</b><span>${statusPill(t.status)}</span></div><div><b>Quote asset</b><span>${assetChip(t.terminal.symbol)}</span></div><div><b>Created</b><span>${fmt.date(t.createdAt)}</span></div></aside></section>
     ${wikiChart(t)}
 
     <div class="filter-row" role="tablist" aria-label="Token views">
@@ -608,7 +608,7 @@ async function renderToken(mint) {
       ${metric("FDV", fmt.usd(t.market.fdvUsd))}
       ${metric("24h change", chgTxt, "vs USD")}
       ${metric("All-time peak", fmt.usd(t.market.peakMarketCapUsd))}
-      ${metric("Turnover 24h", turnover != null ? turnover.toFixed(1) + "%" : "—", "volume ÷ market cap")}
+      ${metric("Turnover 24h", turnover != null ? turnover.toFixed(1) + "%" : "-", "volume ÷ market cap")}
       ${metric("Graduation", gradPct, "progress")}
       ${metric("Price", fmt.price(t.market.priceUsd))}
     </div></section>
@@ -751,19 +751,19 @@ async function renderInsights() {
       <span class="i-asset">${esc(c.terminal_category)}</span>
       <span class="i-num">${fmt.int(c.total)}</span>
       <span class="i-num">${fmt.int(c.graduated)}</span>
-      <span class="i-num muted">${c.total ? (c.graduated / c.total * 100).toFixed(1) + "%" : "—"}</span>
+      <span class="i-num muted">${c.total ? (c.graduated / c.total * 100).toFixed(1) + "%" : "-"}</span>
     </div>`).join("");
   grid.innerHTML = `<div class="detail-inner">
     ${backBtn()}
     <h2 style="font-size:24px">Momentum</h2>
-    <p class="muted" style="margin:0">Launches per underlying asset — last 7 days vs prior 7 days. Click an asset to see its paired tokens.</p>
+    <p class="muted" style="margin:0">Launches per underlying asset · last 7 days vs prior 7 days. Click an asset to see its paired tokens.</p>
     <div class="list-toolbar"><label class="list-search"><span class="sr-only">Filter momentum lists</span><input id="momentum-filter" type="search" placeholder="Filter assets or backing…" autocomplete="off"></label></div>
     <div class="insights-grid">
       <section class="d-section"><h3>Launches by asset (7d)</h3>
         <div class="i-list i-head"><span>#</span><span>Asset</span><span>Launches</span><span>Change</span></div>
         <div class="i-list preview-list" id="momentum-attention-list">${attRows}</div>
       </section>
-      <section class="d-section"><h3>Survival — graduation rate by backing</h3>
+      <section class="d-section"><h3>Survival · graduation rate by backing</h3>
         <p class="muted" style="margin:0 0 10px;font-size:13px">Overall graduation rate: ${(surv.graduationRate * 100).toFixed(1)}% (${fmt.int(surv.graduated)} of ${fmt.int(surv.total)}).</p>
         <div class="i-list i-head"><span>Backing</span><span>Tokens</span><span>Graduated</span><span>Rate</span></div>
         <div class="i-list preview-list" id="momentum-survival-list">${survRows}</div>
@@ -801,7 +801,7 @@ async function renderEarly() {
       <div class="list-toolbar"><label class="list-search"><span class="sr-only">Filter creators</span><input id="creator-filter" type="search" placeholder="Filter creator wallet…" autocomplete="off"></label></div>
       <div class="ew-head"><span>#</span><span>Wallet</span><span>Launches</span><span>Graduated</span><span>Dead</span><span>Median peak</span></div>
       <div class="ew-list preview-list" id="creator-list">${rows}</div>
-      <p class="muted" style="margin:12px 0 0;font-size:12px">Relevance: who emits the most tokens and their track record (graduated vs dead), independent of any single token's price. This is the "who issued" axis — complementary to who holds.</p>
+      <p class="muted" style="margin:12px 0 0;font-size:12px">Top creators: launches, graduated, dead.</p>
     </section>
   </div>`;
   const cf=$("#creator-filter");
@@ -811,7 +811,7 @@ async function renderEarly() {
 const CMP_METRICS = [
   { key: "marketCapUsd", label: "Market cap", better: "high", f: n => fmt.usd(n) },
   { key: "volume24hUsd", label: "Volume 24h", better: "high", f: n => fmt.usd(n) },
-  { key: "depth", label: "Depth", better: "low", f: n => (n == null ? "—" : n + " hop" + (n === 1 ? "" : "s")) },
+  { key: "depth", label: "Depth", better: "low", f: n => (n == null ? "-" : n + " hop" + (n === 1 ? "" : "s")) },
   { key: "stackedTransferTaxBps", label: "Stacked tax", better: "low", f: n => fmt.bps(n) },
   { key: "paidOut", label: "Paid out", better: "high", f: n => fmt.tok(n) },
   { key: "holderCount", label: "Holders", better: "high", f: n => fmt.int(n) },
@@ -952,7 +952,7 @@ function renderLive() {
   grid.innerHTML = `<div class="detail-inner">
     ${backBtn()}
     <h2 style="font-size:24px">Live Date</h2>
-    <p class="muted" style="margin:0">Real-time on-chain data through the API and MCP. The site shows the 15-minute cycle; a key unlocks on-demand refresh.</p>
+    <p class="muted" style="margin:0">Onchain data via API and MCP. Updated every 15 minutes.</p>
 
     <section class="d-section">
       <h3>1 · Connect an AI agent</h3>
@@ -987,12 +987,12 @@ function renderSystemStats(d) {
 function yieldRow(x,i){return `<a class="yield-row" href="#/token/${encodeURIComponent(x.mint)}"><span class="yield-rank">${i+1}</span><span class="yield-token">${tokenIcon(x.mint,x.symbol,x.imageUrl,"token-icon list-token-icon")}<span><strong>${esc(x.symbol||shortAddr(x.mint))}</strong><small>${esc(x.name||"")}</small></span></span>${assetChip(x.terminal)}<span class="yield-value">${fmt.tok(Number(x.distributedTokens)||0)} <small>units</small></span><span class="yield-meta">${fmt.int(x.payoutCount)} payouts</span></a>`;}
 async function loadYieldFeatured(category="xstock") { const el=$("#yield-featured"); if(!el)return; el.innerHTML='<div class="featured-loading">Loading yield leaderboard…</div>'; try{const d=await api(`/leaderboard/rendimento?category=${encodeURIComponent(category)}&limit=20`); const rows=d.leaderboard||[]; el.innerHTML=`<div class="featured-head"><div><h2 id="yield-title">Top stock payouts</h2><p class="muted">Units distributed in the latest indexed cycle.</p></div><div class="featured-tabs"><input class="list-filter" data-filter-target="yield-table" placeholder="Filter…" aria-label="Filter payouts"><button class="active" data-yield-category="xstock">xStock</button><button data-yield-category="prestock">PreStock</button></div></div><div class="yield-table">${rows.length?rows.slice(0,7).map(yieldRow).join(""):'<p class="muted featured-empty">No payouts found in this category.</p>'}</div>`; el.querySelectorAll("[data-yield-category]").forEach(b=>b.addEventListener("click",()=>loadYieldFeatured(b.dataset.yieldCategory)));wireListFilters();}catch(e){el.innerHTML='<p class="muted featured-empty">Leaderboard temporarily unavailable.</p>';}}
 async function loadAttentionFeatured(){const el=$("#attention-featured");if(!el)return;try{const d=await api("/attention?days=7"), rows=(d.assets||[]).slice(0,7), max=Math.max(1,...rows.map(x=>Number(x.launches)||0));el.innerHTML=`<div class="featured-head"><div><span class="section-kicker">Momentum</span><h2 id="attention-title">Stocks in focus</h2><p class="muted">The most active underlying assets in the last ${d.windowDays||7} days.</p></div><input class="list-filter" data-filter-target="attention-list" placeholder="Filter assets" aria-label="Filter attention list"></div><div class="attention-list" id="attention-list">${rows.length?rows.map((x,i)=>`<a class="attention-row" href="#/asset/${encodeURIComponent(x.terminal)}"><span class="attention-rank">${String(i+1).padStart(2,"0")}</span><div class="attention-asset">${assetChip(x.terminal)}<span class="attention-bar"><i style="width:${Math.max(4,(Number(x.launches)||0)/max*100)}%"></i></span></div><strong class="attention-count">${fmt.int(x.launches)}<small> launches</small></strong><span class="attention-change ${x.changePct!=null&&x.changePct<0?'neg':'pos'}">${x.changePct==null?'new':fmt.pct(x.changePct)}<small> 7d</small></span></a>`).join(""):'<p class="muted featured-empty">No attention data yet.</p>'}</div>`;wireListFilters();}catch(e){el.innerHTML='<p class="muted featured-empty">Attention data temporarily unavailable.</p>';}}
-async function loadDbcFeatured(){const el=$("#dbc-featured");if(!el)return;el.innerHTML='<div class="featured-loading">Loading Meteora DBC coverage…</div>';try{const [summary,pools]=await Promise.all([api("/dbc/summary"),api("/dbc/pools?limit=7")]);const rows=pools.pools||[];const st=summary.stats||{};const fresh=summary.freshness||{};const quoteRows=(summary.quotes||[]).map(q=>`<span class="dbc-quote-card">${assetChip(q.symbol||"DBC")}<strong>${fmt.int(q.configs||0)}</strong><small>configs</small></span>`).join("");el.innerHTML=`<div class="featured-head"><div><span class="section-kicker">On-chain launch infrastructure</span><h2 id="dbc-title">Meteora DBC Launch Passport</h2><p class="dbc-note">Readable evidence of stock-quoted Dynamic Bonding Curve launches indexed by SDB from a bounded RPC capture.</p></div><a class="quiet-link" href="#/docs">Methodology ↗</a></div><div class="dbc-hero-stats"><div><strong>${fmt.int(st.pools||0)}</strong><span>pools indexed</span></div><div><strong>${fmt.int(st.configs||0)}</strong><span>configs indexed</span></div><div><strong>${fmt.int(st.byStatus&&st.byStatus.active||0)}</strong><span>active curves</span></div><div><strong>${fmt.int(st.byStatus&&st.byStatus.migrated||0)}</strong><span>migrated</span></div><div><strong>${fmt.int(st.rpcRequests||0)}</strong><span>RPC requests</span></div></div><div class="dbc-evidence"><span>Latest capture: ${esc(fresh.capturedAt||"—")}</span><span>Slot: ${esc(fresh.slot||"—")}</span><span>Run ${esc(String(fresh.runId||"—"))}</span></div><div class="dbc-quotes"><h3>Stock quote coverage</h3><div class="dbc-quote-grid">${quoteRows||'<span class="muted">No quote assets indexed.</span>'}</div></div><div class="dbc-list-head"><h3>Recent indexed curves</h3><span class="muted">Pool · config · quote · state</span></div><div class="dbc-list">${rows.length?rows.map((x,i)=>`<article class="dbc-row"><div class="dbc-rank">${String(i+1).padStart(2,"0")}</div><a class="dbc-token" href="#/token/${encodeURIComponent(x.baseMint)}">${tokenIcon(x.baseMint,x.tokenSymbol,x.tokenImageUrl,"token-icon dbc-token-icon")}<span><strong>${esc(x.tokenSymbol||shortAddr(x.baseMint))}</strong><small>${esc(x.tokenName||"Base token")}</small><code>${esc(shortAddr(x.baseMint))}</code></span></a><div class="dbc-quote">${assetChip(x.quoteSymbol||"DBC")}<small>${esc(x.variant||"VirtualPool")}</small></div><div class="dbc-state"><strong>${esc(x.status||"indexed")}</strong><small>${esc(x.curveProgress||"0")} curve progress</small></div><div class="dbc-addresses"><a href="https://solscan.io/account/${encodeURIComponent(x.address)}" target="_blank" rel="noopener noreferrer">Pool ${esc(shortAddr(x.address))} ↗</a><a href="https://solscan.io/account/${encodeURIComponent(x.configAddress)}" target="_blank" rel="noopener noreferrer">Config ${esc(shortAddr(x.configAddress))} ↗</a></div></article>`).join(""):'<p class="muted featured-empty">No DBC pools available.</p>'}</div>`;}catch(e){el.innerHTML='<p class="muted featured-empty">Meteora DBC data temporarily unavailable.</p>';}}
+async function loadDbcFeatured(){const el=$("#dbc-featured");if(!el)return;el.innerHTML='<div class="featured-loading">Loading Meteora DBC coverage…</div>';try{const [summary,pools]=await Promise.all([api("/dbc/summary"),api("/dbc/pools?limit=7")]);const rows=pools.pools||[];const st=summary.stats||{};const fresh=summary.freshness||{};const quoteRows=(summary.quotes||[]).map(q=>`<span class="dbc-quote-card">${assetChip(q.symbol||"DBC")}<strong>${fmt.int(q.configs||0)}</strong><small>configs</small></span>`).join("");el.innerHTML=`<div class="featured-head"><div><span class="section-kicker">Onchain launch infrastructure</span><h2 id="dbc-title">Meteora DBC Launch Passport</h2><p class="dbc-note">Readable evidence of stock-quoted Dynamic Bonding Curve launches indexed by SDB from a bounded RPC capture.</p></div><a class="quiet-link" href="#/docs">Methodology ↗</a></div><div class="dbc-hero-stats"><div><strong>${fmt.int(st.pools||0)}</strong><span>pools indexed</span></div><div><strong>${fmt.int(st.configs||0)}</strong><span>configs indexed</span></div><div><strong>${fmt.int(st.byStatus&&st.byStatus.active||0)}</strong><span>active curves</span></div><div><strong>${fmt.int(st.byStatus&&st.byStatus.migrated||0)}</strong><span>migrated</span></div><div><strong>${fmt.int(st.rpcRequests||0)}</strong><span>RPC requests</span></div></div><div class="dbc-evidence"><span>Latest capture: ${esc(fresh.capturedAt||"-")}</span><span>Slot: ${esc(fresh.slot||"-")}</span><span>Run ${esc(String(fresh.runId||"-"))}</span></div><div class="dbc-quotes"><h3>Stock quote coverage</h3><div class="dbc-quote-grid">${quoteRows||'<span class="muted">No quote assets indexed.</span>'}</div></div><div class="dbc-list-head"><h3>Recent indexed curves</h3><span class="muted">Pool · config · quote · state</span></div><div class="dbc-list">${rows.length?rows.map((x,i)=>`<article class="dbc-row"><div class="dbc-rank">${String(i+1).padStart(2,"0")}</div><a class="dbc-token" href="#/token/${encodeURIComponent(x.baseMint)}">${tokenIcon(x.baseMint,x.tokenSymbol,x.tokenImageUrl,"token-icon dbc-token-icon")}<span><strong>${esc(x.tokenSymbol||shortAddr(x.baseMint))}</strong><small>${esc(x.tokenName||"Base token")}</small><code>${esc(shortAddr(x.baseMint))}</code></span></a><div class="dbc-quote">${assetChip(x.quoteSymbol||"DBC")}<small>${esc(x.variant||"VirtualPool")}</small></div><div class="dbc-state"><strong>${esc(x.status||"indexed")}</strong><small>${esc(x.curveProgress||"0")} curve progress</small></div><div class="dbc-addresses"><a href="https://solscan.io/account/${encodeURIComponent(x.address)}" target="_blank" rel="noopener noreferrer">Pool ${esc(shortAddr(x.address))} ↗</a><a href="https://solscan.io/account/${encodeURIComponent(x.configAddress)}" target="_blank" rel="noopener noreferrer">Config ${esc(shortAddr(x.configAddress))} ↗</a></div></article>`).join(""):'<p class="muted featured-empty">No DBC pools available.</p>'}</div>`;}catch(e){el.innerHTML='<p class="muted featured-empty">Meteora DBC data temporarily unavailable.</p>';}}
 async function loadCreatorsFeatured(){const el=$("#creators-featured");if(!el)return;try{const d=await api("/leaderboard/creators?limit=10"), rows=(d.leaderboard||[]).slice(0,7);el.innerHTML=`<div class="featured-head"><div><span class="section-kicker">Wallet activity</span><h2 id="creators-title">Featured creators</h2><p class="muted">Creators ranked by indexed launches. Curated identities appear only when sourced.</p></div><a class="quiet-link" href="#/creators">View full ranking ↗</a><input class="list-filter" data-filter-target="creator-list" placeholder="Filter wallets" aria-label="Filter creators"></div><div class="creator-list" id="creator-list">${rows.length?rows.map((x,i)=>{const total=(x.graduated||0)+(x.dead||0)+(x.live||0), cls=x.graduated>0?'good':(total&&x.dead/total>.8?'warn':'neutral');return `<a class="creator-row" data-creator="${esc(x.creator)}" href="#/creators"><span class="creator-rank">${String(i+1).padStart(2,"0")}</span><span class="creator-status ${cls}">${x.graduated>0?'▲':x.dead&&total&&x.dead/total>.8?'!':'·'}</span>${walletIdentityHtml(x.creator,true)}<span class="creator-stat"><strong>${fmt.int(x.launchCount??x.launches)}</strong><small> launches</small></span><span class="creator-stat"><strong>${fmt.int(x.graduated)}</strong><small> graduated</small></span><strong class="creator-peak">${fmt.usd(x.medianPeakMarketCapUsd)}<small> median peak</small></strong></a>`}).join(""):'<p class="muted featured-empty">Not enough creator data yet.</p>'}</div>`;wireListFilters();}catch(e){el.innerHTML='<p class="muted featured-empty">Creator data temporarily unavailable.</p>';}}
-async function showCreatorModal(addr){const backdrop=$("#creator-modal-backdrop"), content=$("#creator-modal-content");if(!backdrop||!content)return;backdrop.classList.add("open");backdrop.setAttribute("aria-hidden","false");content.innerHTML='<p class="muted">Loading creator portfolio…</p>';try{const d=await api(`/creator/${encodeURIComponent(addr)}/tokens?limit=60`), rows=d.tokens||[];const byAsset={};rows.forEach(t=>{const key=t.terminal_symbol||t.terminal||"Unknown";byAsset[key]=(byAsset[key]||0)+1;});const assetSummary=Object.entries(byAsset).slice(0,12).map(([k,v])=>`<span class="creator-holding">${assetChip(k)} <strong>${fmt.int(v)}</strong><small> tokens</small></span>`).join("");content.innerHTML=`<div class="creator-modal-head"><span class="section-kicker">Indexed creator portfolio</span><h2 id="creator-modal-title">${walletIdentityHtml(addr)}</h2><p class="mono">${esc(addr)}</p><p class="muted">Observed token launches linked to this wallet. This is activity evidence, not proof of wallet ownership or identity.</p></div><div class="creator-modal-stats"><div><strong>${fmt.int(rows.length)}</strong><small>indexed tokens</small></div><div><strong>${fmt.int(Object.keys(byAsset).length)}</strong><small>stock assets</small></div></div><div class="creator-holdings"><h3>Stock exposure by indexed tokens</h3><div class="creator-holding-grid">${assetSummary||'<span class="muted">No underlying asset data.</span>'}</div></div><div class="creator-portfolio-list">${rows.slice(0,60).map(t=>`<a class="creator-portfolio-row" href="#/token/${encodeURIComponent(t.mint)}"><span>${tokenIcon(t.mint,t.symbol,t.image_url,"token-icon list-token-icon")}</span><span><strong>${esc(t.symbol||shortAddr(t.mint))}</strong><small>${esc(t.name||"")}</small></span><span>${assetChip(t.terminal_symbol||t.terminal||"Unknown")}</span><strong>${fmt.usd(t.market_cap_usd ?? t.marketCapUsd)}</strong></a>`).join("")||'<p class="muted">No tokens found.</p>'}</div>`;}catch(e){content.innerHTML='<p class="muted">Creator portfolio temporarily unavailable.</p>';}}
+async function showCreatorModal(addr){const backdrop=$("#creator-modal-backdrop"), content=$("#creator-modal-content");if(!backdrop||!content)return;backdrop.classList.add("open");backdrop.setAttribute("aria-hidden","false");content.innerHTML='<p class="muted">Loading creator portfolio…</p>';try{const d=await api(`/creator/${encodeURIComponent(addr)}/tokens?limit=60`), rows=d.tokens||[];const byAsset={};rows.forEach(t=>{const key=t.terminal_symbol||t.terminal||"Unknown";byAsset[key]=(byAsset[key]||0)+1;});const assetSummary=Object.entries(byAsset).slice(0,12).map(([k,v])=>`<span class="creator-holding">${assetChip(k)} <strong>${fmt.int(v)}</strong><small> tokens</small></span>`).join("");content.innerHTML=`<div class="creator-modal-head"><span class="section-kicker">Indexed creator portfolio</span><h2 id="creator-modal-title">${walletIdentityHtml(addr)}</h2><p class="mono">${esc(addr)}</p><p class="muted">Launches linked to this wallet.</p></div><div class="creator-modal-stats"><div><strong>${fmt.int(rows.length)}</strong><small>indexed tokens</small></div><div><strong>${fmt.int(Object.keys(byAsset).length)}</strong><small>stock assets</small></div></div><div class="creator-holdings"><h3>Stock exposure by indexed tokens</h3><div class="creator-holding-grid">${assetSummary||'<span class="muted">No underlying asset data.</span>'}</div></div><div class="creator-portfolio-list">${rows.slice(0,60).map(t=>`<a class="creator-portfolio-row" href="#/token/${encodeURIComponent(t.mint)}"><span>${tokenIcon(t.mint,t.symbol,t.image_url,"token-icon list-token-icon")}</span><span><strong>${esc(t.symbol||shortAddr(t.mint))}</strong><small>${esc(t.name||"")}</small></span><span>${assetChip(t.terminal_symbol||t.terminal||"Unknown")}</span><strong>${fmt.usd(t.market_cap_usd ?? t.marketCapUsd)}</strong></a>`).join("")||'<p class="muted">No tokens found.</p>'}</div>`;}catch(e){content.innerHTML='<p class="muted">Creator portfolio temporarily unavailable.</p>';}}
 function closeCreatorModal(){const b=$("#creator-modal-backdrop");if(b){b.classList.remove("open");b.setAttribute("aria-hidden","true");}}
 function wireListFilters(){document.querySelectorAll(".list-filter").forEach(i=>{if(i.dataset.wired)return;i.dataset.wired="1";i.addEventListener("input",()=>{const q=i.value.toLowerCase().trim();const box=document.querySelector("."+i.dataset.filterTarget);if(box)box.querySelectorAll(":scope > *").forEach(r=>r.classList.toggle("filter-hidden",q&&!r.textContent.toLowerCase().includes(q)));});});}
-async function loadQuoteCaps(){try{const d=await api("/quote-market-caps");const caps=d.quotes||{};document.querySelectorAll(".asset-cap-badge").forEach(el=>{const crypto=el.querySelector(".cap-crypto"), stock=el.querySelector(".cap-stock");const q=crypto?.dataset.quote, data=caps[q]||caps[q?.toUpperCase()];if(crypto)crypto.textContent=data?.cryptoMarketCapUsd!=null?fmt.usd(data.cryptoMarketCapUsd):"Not indexed";const signal=data?.stock;if(stock)stock.textContent=signal?.priceUsd!=null?`${fmt.stock(signal.priceUsd)} · ${signal.sharePct??"—"}% share`:signal?.sharePct!=null?`${signal.sharePct}% share`:"No signal";});}catch(e){document.querySelectorAll(".cap-stock,.cap-crypto").forEach(el=>{el.textContent="Unavailable";});}}
+async function loadQuoteCaps(){try{const d=await api("/quote-market-caps");const caps=d.quotes||{};document.querySelectorAll(".asset-cap-badge").forEach(el=>{const crypto=el.querySelector(".cap-crypto"), stock=el.querySelector(".cap-stock");const q=crypto?.dataset.quote, data=caps[q]||caps[q?.toUpperCase()];if(crypto)crypto.textContent=data?.cryptoMarketCapUsd!=null?fmt.usd(data.cryptoMarketCapUsd):"Not indexed";const signal=data?.stock;if(stock)stock.textContent=signal?.priceUsd!=null?`${fmt.stock(signal.priceUsd)} · ${signal.sharePct??"-"}% share`:signal?.sharePct!=null?`${signal.sharePct}% share`:"No signal";});}catch(e){document.querySelectorAll(".cap-stock,.cap-crypto").forEach(el=>{el.textContent="Unavailable";});}}
 function loadHomeFeatured(){Promise.all([api("/stats").then(renderSystemStats).catch(()=>{}),loadYieldFeatured(),loadAttentionFeatured(),loadDbcFeatured(),loadCreatorsFeatured(),loadYieldCalc(),loadHomeCompare()]).then(loadQuoteCaps);}
 
 function renderLanding() {
@@ -1014,7 +1014,7 @@ function renderDocs(){
   beginDetail();
   const mcpConfig = JSON.stringify({mcpServers:{sdb:{command:"python",args:["/path/to/mcp_server.py"],env:{SDB_API_URL:"https://solanastockdatabase.com"}}}}, null, 2);
   const tools = [
-    ["search_tokens", "Search by name, symbol, or mint", "q, limit"], ["get_token", "Backing, yield, creator, and on-chain data", "mint"],
+    ["search_tokens", "Search by name, symbol, or mint", "q, limit"], ["get_token", "Backing, yield, creator, and onchain data", "mint"],
     ["get_creator", "Indexed creator history", "creator"], ["list_assets", "Underlying asset coverage", "none"],
     ["get_attention", "Launch activity by underlying asset", "days"], ["get_survival", "Graduation and survival metrics", "none"],
     ["leaderboard_rendimento", "Tokens ranked by distributed units", "category, limit"], ["get_stats", "System and snapshot counts", "none"]
@@ -1022,13 +1022,13 @@ function renderDocs(){
   grid.innerHTML = `<div class="detail-inner docs-page">
     <button class="back" onclick="location.hash=''">Back</button>
     <p class="eyebrow">Builder documentation</p><h2>Build on the same data engine</h2>
-    <p class="muted docs-lead">SDB exposes the indexed read-only dataset through REST and MCP. The web, builders, and AI agents read the same snapshot-backed engine.</p>
+    <p class="muted docs-lead">Read-only data via REST and MCP.</p>
     <section class="docs-card docs-quick"><h3>REST quick start</h3><pre class="docs-code">curl https://solanastockdatabase.com/api/stats</pre><button class="quiet-button" data-copy-doc="curl https://solanastockdatabase.com/api/stats">Copy command</button><p class="muted">Free access: no key, latest indexed cycle, 30 requests per minute.</p></section>
     <div class="docs-grid">
       <section class="docs-card"><h3>Core REST endpoints</h3><p><code>GET /api/stats</code><br><code>GET /api/search?q=NVDA</code><br><code>GET /api/token/{mint}</code><br><code>GET /api/cards</code><br><code>GET /api/attention?days=7</code><br><code>GET /api/leaderboard/rendimento</code><br><code>GET /api/leaderboard/creators</code><br><code>GET /api/dbc/summary</code></p></section>
       <section class="docs-card"><h3>MCP setup</h3><p>Download the inspectable stdio client, then point your MCP host at the public API.</p><pre class="docs-code">curl -O https://solanastockdatabase.com/mcp</pre><pre class="docs-code">${esc(mcpConfig)}</pre><button class="quiet-button" data-copy-doc="${esc(mcpConfig)}">Copy config</button></section>
       <section class="docs-card"><h3>Eight MCP tools</h3><div class="docs-tools">${tools.map(t=>`<div class="docs-tool"><code>${t[0]}</code><span>${t[1]}</span><small>${t[2]}</small></div>`).join("")}</div></section>
-      <section class="docs-card"><h3>Data and methodology</h3><p>StonkFun is ingested every 15 minutes into SQLite history. Helius enriches selected records with read-only Solana evidence. Meteora DBC coverage is persisted from bounded RPC captures. Missing values remain missing; SDB does not provide buy or sell signals.</p><a class="quiet-link" href="#/live">See connection guide ↗</a></section>
+      <section class="docs-card"><h3>Data and methodology</h3><p>StonkFun every 15 minutes. Onchain via Helius. No buy or sell signals.</p><a class="quiet-link" href="#/live">See connection guide ↗</a></section>
       <section class="docs-card"><h3>Plans and limits</h3><p><strong>Free · $0</strong><br>Database-only snapshots, 30 req/min.</p><p><strong>Starter · $5/mo</strong><br>9,000 requests, on-demand refresh.</p><p><strong>Trader · $50/mo</strong><br>100,000 requests, full real-time access.</p></section>
       <section class="docs-card"><h3>Stable contract</h3><p>Responses are JSON objects. MCP returns the same response data as its REST counterpart. Paid refresh is <code>GET /api/token/{mint}/refresh</code> with a Starter or Trader bearer key.</p></section>
     </div>
@@ -1171,7 +1171,7 @@ const TIP_PROMPTS = [
   "stacked tax of token X",
   "how many tokens are backed by Tesla",
   "show the holders of token Y",
-  "on-chain events of token Z",
+  "onchain events of token Z",
 ];
 (function rotateTip() {
   const tip = $("#search-tip");
@@ -1206,16 +1206,16 @@ async function loadYieldCalc(){
       <div class="calc-field"><label>Amount held (USD)</label><input id="yc-amount" class="num" inputmode="numeric" value="1000"></div>
     </div>
     <div class="calc-out">
-      <div class="cell"><div class="k">Est. income / year</div><div class="v big" id="yc-year">—</div><div class="s" id="yc-apr">—</div></div>
-      <div class="cell"><div class="k">Est. income / month</div><div class="v" id="yc-month">—</div><div class="s" id="yc-note2"></div></div>
+      <div class="cell"><div class="k">Est. income / year</div><div class="v big" id="yc-year">-</div><div class="s" id="yc-apr">-</div></div>
+      <div class="cell"><div class="k">Est. income / month</div><div class="v" id="yc-month">-</div><div class="s" id="yc-note2"></div></div>
     </div>
-    <p class="calc-foot">Estimate assuming current 24h volume holds and transfer-fee rewards accrue pro-rata by market cap. Reward coins only. Not a guarantee or a recommendation.</p>`;
+    <p class="calc-foot">Estimate from current 24h volume. Reward coins only.</p>`;
   const sel=$("#yc-token"), amt=$("#yc-amount"), cache={};
   async function calc(){
     const mint=sel.value, amount=Math.max(0,parseFloat(amt.value)||0);
     let d=cache[mint]; if(d===undefined||d===null){ try{ d=await api(`/token/${mint}`);}catch(e){ d=null; } cache[mint]=d; }
     const yEl=$("#yc-year"),mEl=$("#yc-month"),aEl=$("#yc-apr"),n2=$("#yc-note2");
-    if(!d||!d.found||!d.token){ yEl.textContent="—"; mEl.textContent="—"; aEl.textContent="no data"; if(n2)n2.textContent=""; return; }
+    if(!d||!d.found||!d.token){ yEl.textContent="-"; mEl.textContent="-"; aEl.textContent="no data"; if(n2)n2.textContent=""; return; }
     const t=d.token, vol=(t.market&&t.market.volume24hUsd)||0, mc=(t.market&&t.market.marketCapUsd)||0, taxBps=t.stackedTransferTaxBps||0;
     if(!taxBps){ yEl.textContent="$0"; mEl.textContent="$0"; aEl.textContent="no transfer-fee rewards"; n2.textContent=""; return; }
     const apr= mc>0 ? (vol*365)*(taxBps/10000)/mc : 0, year=amount*apr, month=year/12;

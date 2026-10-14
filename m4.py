@@ -1,6 +1,6 @@
 """SDB: M4 creator history (core).
 
-Reputation per creator wallet, without on-chain indexing: joins `launches` (all
+Reputation per creator wallet, without onchain indexing: joins `launches` (all
 launches, including dead ones) with `tokens` (live, with status and peak).
 """
 import statistics

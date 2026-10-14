@@ -1,23 +1,21 @@
 # Examples
 
-All examples use the public API. Replace the base URL with `http://127.0.0.1:8090` for a local run.
+Base URL: `https://solanastockdatabase.com` or `http://127.0.0.1:8090`.
 
-| File | What it does |
+| File | Does |
 | --- | --- |
-| [curl.sh](curl.sh) | Common endpoints from the shell. |
-| [top_tokens.py](top_tokens.py) | Prints tokens above a market cap floor. Python stdlib only. |
-| [top_tokens.mjs](top_tokens.mjs) | Same in Node 18+. No dependencies. |
-| [mcp.json](mcp.json) | MCP client config for agents. |
-
-## Endpoints
+| [curl.sh](curl.sh) | Main endpoints |
+| [top_tokens.py](top_tokens.py) | Tokens above a market cap |
+| [top_tokens.mjs](top_tokens.mjs) | Same, Node 18+ |
+| [mcp.json](mcp.json) | MCP config |
 
 | Endpoint | Returns |
 | --- | --- |
-| `GET /api/health` | Service status. |
-| `GET /api/stats` | Token count and total market cap. |
-| `GET /api/search?q=` | Tokens matching a symbol, name or mint. |
-| `GET /api/token/{mint}` | One token with holders and events. |
-| `GET /api/assets` | Backing assets and their tokens. |
-| `GET /api/cards?limit=` | Token cards for the UI. |
-| `GET /api/leaderboard/rendimento?limit=` | Tokens ranked by payout yield. |
-| `GET /api/rpc-stats` | RPC calls and credits per day and method. |
+| `/api/health` | Status |
+| `/api/stats` | Totals |
+| `/api/search?q=` | Search |
+| `/api/token/{mint}` | One token |
+| `/api/assets` | Backing assets |
+| `/api/cards?limit=` | Token cards |
+| `/api/leaderboard/rendimento` | Top payouts |
+| `/api/rpc-stats` | RPC credits |

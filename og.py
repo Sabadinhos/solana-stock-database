@@ -65,7 +65,7 @@ def _font(size, bold=False, semibold=False):
 
 def _usd(n):
     if n is None:
-        return "—"
+        return "-"
     a = abs(n)
     if a >= 1e9:
         return f"${n/1e9:.2f}B"
@@ -78,7 +78,7 @@ def _usd(n):
 
 def _tok(n):
     if n is None:
-        return "—"
+        return "-"
     if n >= 1e9:
         return f"{n/1e9:.2f}B"
     if n >= 1e6:
@@ -183,7 +183,7 @@ def build_png(mint, token, rewards):
     d.rectangle([0, 0, W, 84], fill=SURFACE)
     d.line([0, 84, W, 84], fill=BORDER, width=1)
     _text_w(d, (64, 18), "SOLANA STOCK DATABASE", _font(26, semibold=True), TEXT)
-    _text_w(d, (64, 52), "memstocks on Solana — yield paid in stocks", _font(18), MUTED)
+    _text_w(d, (64, 52), "memstocks on Solana · yield paid in stocks", _font(18), MUTED)
     mint_disp = "mint " + mint[:6] + "…" + mint[-4:]
     mw = d.textlength(mint_disp, font=_font(20))
     _text_w(d, (W - 64 - int(mw), 34), mint_disp, _font(20), MUTED)
@@ -234,7 +234,7 @@ def build_png(mint, token, rewards):
     cells = [
         ("MARKET CAP", _usd((token.get("market") or {}).get("marketCapUsd")), ""),
         ("STACKED TAX", _bps(token.get("stackedTransferTaxBps")),
-         f"depth {token.get('depth', '—')}"),
+         f"depth {token.get('depth', '-')}"),
         ("PAID OUT", (_tok((rewards or {}).get("distributedTokens")) + " " + (rewards or {}).get("terminal", "")).strip(),
          "in stock, lifetime"),
     ]
@@ -251,7 +251,7 @@ def build_png(mint, token, rewards):
 
     # footer
     d.line([64, 578, W - 64, 578], fill=BORDER, width=1)
-    _text_w(d, (64, 588), "Statistics only — not investment advice", _font(20), MUTED)
+    _text_w(d, (64, 588), "Statistics only · not investment advice", _font(20), MUTED)
     dom = "Solana Stock Database"
     dw = d.textlength(dom, font=_font(20, semibold=True))
     _text_w(d, (W - 64 - int(dw), 588), dom, _font(20, semibold=True), TEXT)
@@ -270,7 +270,7 @@ def share_meta(token, rewards):
     tax = _bps(token.get("stackedTransferTaxBps"))
     paid = _tok((rewards or {}).get("distributedTokens"))
     paid_term = (rewards or {}).get("terminal") or ""
-    title = f"{symbol} — backed by {terminal}" if terminal else symbol
+    title = f"{symbol} · backed by {terminal}" if terminal else symbol
     desc = f"{name} · market cap {mc} · stacked tax {tax}"
     if paid_term:
         desc += f" · paid out {paid} in {paid_term}"

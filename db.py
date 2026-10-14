@@ -313,7 +313,7 @@ def _attach_split(conn, root):
     conn.execute("ATTACH DATABASE ? AS onchain", (onchain,))
     conn.execute("ATTACH DATABASE ? AS history", (history_files[-1],))
     # Compatibility views preserve the monolithic table names for read-only staging.
-    # Some older source snapshots do not contain later on-chain tables; expose an
+    # Some older source snapshots do not contain later onchain tables; expose an
     # empty typed view so token detail endpoints remain readable during migration.
     for table in ("snapshots", "distributions"):
         exists = conn.execute("SELECT 1 FROM history.sqlite_master WHERE type='table' AND name=?", (table,)).fetchone()
@@ -385,7 +385,7 @@ def init_db(conn=None):
         has = c.execute(f"PRAGMA table_info(snapshots)").fetchall()
         if not any(r[1] == col for r in has):
             c.execute(f"ALTER TABLE snapshots ADD COLUMN {col} {decl}")
-    # migration: holder concentration (on-chain, Helius)
+    # migration: holder concentration (onchain, Helius)
     has = c.execute("PRAGMA table_info(tokens)").fetchall()
     if not any(r[1] == "holder_top10_share" for r in has):
         c.execute("ALTER TABLE tokens ADD COLUMN holder_top10_share REAL")

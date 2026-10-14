@@ -1,4 +1,4 @@
-"""SDB on-chain enrichment over Solana RPC (read-only).
+"""SDB onchain enrichment over Solana RPC (read-only).
 
 Enriches the top tokens by market cap with:
   - holders: largest accounts and top-10 concentration (getTokenLargestAccounts, getTokenSupply)

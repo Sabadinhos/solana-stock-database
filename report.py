@@ -86,12 +86,12 @@ def pulse(conn, minutes=15):
         out.append("\n**Top payers (yield in stock, lifetime)**\n> "
                    + " · ".join(f"{r['quote_symbol']} {r['y']:,.0f}" for r in yield_rows))
 
-    # 5. recent on-chain events (dev actions)
+    # 5. recent onchain events (dev actions)
     ev = conn.execute(
         """SELECT COUNT(*) c, kind FROM token_events GROUP BY kind ORDER BY c DESC"""
     ).fetchall()
     if ev:
-        out.append("\n**On-chain events (dev)**\n> "
+        out.append("\n**Onchain events (dev)**\n> "
                    + " · ".join(f"{r['kind']} {r['c']}" for r in ev))
 
     return "\n".join(out)
