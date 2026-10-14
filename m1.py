@@ -1,4 +1,4 @@
-"""SDB — M1 Cadeia de Lastro (núcleo)."""
+"""SDB: M1 backing chain (core)."""
 import json
 
 
@@ -8,7 +8,7 @@ def token_metrics(conn, mint):
         return None
     chain = json.loads(row["chain_json"] or "[]")
 
-    # Taxa Empilhada (pré-calculada no ingest, guardada em stacked_tax_bps).
+    # Stacked tax (precomputed at ingest, stored in stacked_tax_bps).
     stacked = row["stacked_tax_bps"] or 0
     terminal_price = None
     if row["terminal_symbol"]:
@@ -25,9 +25,9 @@ def token_metrics(conn, mint):
             ).fetchone()
             terminal_price = token_row["price_usd"] if token_row else None
 
-    # Liquidez de Saída Real: a API StonkFun NÃO expõe liquidityUsd (gap conhecido).
-    # Usamos marketCapUsd mínimo da cadeia como proxy de FRAGILIDADE (não de liquidez).
-    # A liquidez real do pool Raydium (SOL/USDC) será lida via DexScreener — ver BACKLOG.
+    # Real exit liquidity: the StonkFun API does NOT expose liquidityUsd (known gap).
+    # The chain's minimum marketCapUsd is used as a FRAGILITY proxy (not liquidity).
+    # Real Raydium pool liquidity (SOL/USDC) will come from DexScreener, see BACKLOG.
     chain_mcaps = [row["market_cap_usd"]]
     chain_fees = [row["transfer_fee_bps"] or 0]
     for hop in chain:
@@ -62,11 +62,11 @@ def token_metrics(conn, mint):
         "quoteOnlyFees": bool(row["quote_only_fees"]),
         "terminalPriceUsd": terminal_price,
         "transferFeeBps": row["transfer_fee_bps"],
-        # Fragilidade de Lastro (proxy): marketCap mínimo da cadeia.
+        # Backing fragility (proxy): minimum marketCap in the chain.
         "thinnestLinkMarketCapUsd": min(chain_mcaps),
         "liquidity": {
             "source": "proxy",
-            "note": "marketCap mínimo da cadeia; liquidez real do pool em backlog (DexScreener)",
+            "note": "minimum marketCap in the chain; real pool liquidity in backlog (DexScreener)",
         },
         "market": {
             "priceUsd": row["price_usd"],
@@ -84,7 +84,7 @@ def token_metrics(conn, mint):
 
 
 def leaderboard_lastro(conn, limit=50):
-    """Ranking de lastro mais frágil: menor proxy de liquidez de saída relativo ao mcap."""
+    """Most fragile backing ranking: lowest exit-liquidity proxy relative to mcap."""
     rows = conn.execute(
         """SELECT mint FROM tokens
            WHERE market_cap_usd IS NOT NULL AND market_cap_usd > 0

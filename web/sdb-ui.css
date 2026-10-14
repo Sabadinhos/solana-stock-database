@@ -28,8 +28,8 @@
 @media(max-width:900px){.stock-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.stock-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.stock-card__top{display:block}.stock-card__top span{display:block;margin-top:4px}.stock-card{min-width:0}.stock-card>span{white-space:normal;overflow:visible;overflow-wrap:anywhere}.dbc-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.token-explorer-footer{align-items:flex-start;flex-direction:column}}
 
 /* SDB UI
-   Preto puro, hairline, glow na cor do ativo.
-   Ordem do arquivo: tokens, base, chrome, hero, secoes, componentes, responsivo. */
+   Pure black, hairlines, glow in the asset color.
+   File order: tokens, base, chrome, hero, sections, components, responsive. */
 
 /* ---------- tokens ---------- */
 
@@ -49,7 +49,7 @@
   --ui: Archivo, "Helvetica Neue", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
   --pad-x: clamp(20px, 4.5vw, 64px);
-  --asset: #8c8c8c; /* sobrescrito inline por componente */
+  --asset: #8c8c8c; /* overridden inline per component */
 }
 
 /* ---------- base ---------- */
@@ -102,10 +102,10 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
   color: var(--ink-2);
 }
 
-/* ---------- ticker de underlying ---------- */
+/* ---------- underlying ticker ---------- */
 
-/* Um conjunto deduplicado (#ticker) + copia aria-hidden (#ticker-clone). Cada conjunto termina com o
-   proprio gap (padding-right), entao translateX(-50%) do trilho e exatamente um periodo: loop sem emenda. */
+/* One deduplicated set (#ticker) + aria-hidden copy (#ticker-clone). Each set ends with its
+   own gap (padding-right), so translateX(-50%) of the track is exactly one period: seamless loop. */
 .ticker {
   position: relative;
   display: flex;
@@ -190,7 +190,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
   align-items: center;
   justify-content: center;
   padding: 80px var(--pad-x);
-  /* o dropdown da busca precisa sair do hero pela base; so o eixo x e recortado (clip nao cria scroll) */
+  /* the search dropdown must overflow the hero bottom; only the x axis is clipped (clip creates no scroll) */
   overflow: visible;
   overflow-x: clip;
 }
@@ -224,8 +224,8 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 
 .proof { font-size: 12px; letter-spacing: 0.1em; color: var(--ink-3); }
 
-/* cards flutuantes do fundo. --hero-scroll (0..1, via JS, so desktop) desloca cada card numa
-   profundidade diferente; `translate`/`rotate` compoem com o `transform` da animacao drift. */
+/* floating background cards. --hero-scroll (0..1, set by JS, desktop only) shifts each card at a
+   different depth; `translate`/`rotate` compose with the drift animation `transform`. */
 .hero__cards { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; opacity: calc(1 - var(--hero-scroll, 0) * 0.45); }
 .float { position: absolute; width: 250px; animation: drift 19s ease-in-out infinite; translate: 0 calc(var(--hero-scroll, 0) * var(--float-depth, -40px)); rotate: calc(var(--hero-scroll, 0) * var(--float-tilt, 2deg)); }
 .float .card { transform: perspective(1300px) rotateY(16deg) rotate(-5deg); }
@@ -242,7 +242,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
   50% { transform: translate3d(0, -16px, 0); }
 }
 
-/* ---------- secoes ---------- */
+/* ---------- sections ---------- */
 
 .section { padding: 56px var(--pad-x) 0; }
 .search-wrap { position:relative; width:100%; max-width:720px; }
@@ -298,7 +298,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .field::placeholder { color: var(--ink-3); }
 .hint { font-family: var(--mono); font-size: 12px; color: var(--ink-3); text-align: center; }
 
-/* ---------- avatar do ativo ---------- */
+/* ---------- asset avatar ---------- */
 
 .avatar {
   position: relative;
@@ -341,7 +341,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 }
 .pad__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
-/* ---------- triangulo ---------- */
+/* ---------- triangle ---------- */
 
 .trend { margin-left: 4px; font-size: 0.6em; line-height: 1; }
 .trend--up { color: var(--up); }
@@ -358,7 +358,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 
 .card {
   position: relative;
-  margin-top: 30px;          /* espaco do avatar que sobe para fora */
+  margin-top: 30px;          /* room for the avatar that overflows upward */
   padding: 46px 20px 16px;
   background: var(--bg);
   border: 1px solid var(--line);
@@ -428,11 +428,11 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
   color: var(--ink-3);
 }
 
-/* card do hero: mesma anatomia, sem stats */
+/* hero card: same anatomy, no stats */
 .float .card { margin-top: 28px; }
 .float .card__stats { display: none; }
 
-/* ---------- linha densa ---------- */
+/* ---------- dense row ---------- */
 
 .rows { border-top: 1px solid var(--line); }
 .row {
@@ -450,7 +450,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .row__muted { font-size: 13px; color: var(--ink-2); text-align: right; }
 .row .bar { margin-top: 0; }
 
-/* ---------- criador ---------- */
+/* ---------- creator ---------- */
 
 .creators { border-top: 1px solid var(--line); }
 .creator {
@@ -487,7 +487,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .advanced-sim-output { margin-top:12px; padding:12px; border-top:1px solid var(--line-soft); color:var(--ink); font:12px var(--mono); }
 .creator__num { font-size: 15px; text-align: right; }
 
-/* ---------- ferramentas ---------- */
+/* ---------- tools ---------- */
 
 .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
 .panel {
@@ -529,7 +529,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 .compare__metric span:nth-child(2) { text-align: center; font-family: var(--ui); font-size: 10px; letter-spacing: 0.14em; color: var(--ink-3); }
 .compare__metric span:last-child { text-align: right; }
 
-/* ---------- rodape ---------- */
+/* ---------- footer ---------- */
 
 .footer {
   margin-top: 72px;
@@ -546,7 +546,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; letter-spacing: -0.0
 }
 .footer__legal { max-width: 720px; text-align: right; }
 
-/* ---------- responsivo ---------- */
+/* ---------- responsive ---------- */
 
 @media (max-width: 900px) {
   .nav__links { display: none; }
@@ -673,8 +673,8 @@ html[data-theme="light"] .btn--solid { background:#111; border-color:#111; color
   .stat__value { font-size: 14px; }
 }
 
-/* Busca no hero. O slot reserva a altura do campo; no desktop o .search-dock vira fixed no rodape da
-   viewport quando o slot sai por cima (JS em index.html) e o dropdown passa a abrir para cima. */
+/* Hero search. The slot reserves the field height; on desktop .search-dock becomes fixed at the viewport
+   bottom when the slot leaves the top (JS in index.html) and the dropdown opens upward. */
 .hero-search { display:flex; flex-direction:column; align-items:center; gap:12px; width:100%; max-width:720px; }
 .hero-search__slot { width:100%; min-height:62px; }
 .search-dock { width:100%; }
@@ -695,18 +695,18 @@ body.search-docked { padding-bottom:96px; }
 }
 html[data-theme="light"] .search-dock.is-docked .field { box-shadow:0 10px 30px rgba(0,0,0,.12); }
 
-/* Troca de tema suave: a classe so existe durante ~450ms apos o clique (nunca com reduced-motion). */
+/* Smooth theme switch: the class exists only for ~450ms after the click (never with reduced-motion). */
 html.theme-transition, html.theme-transition *, html.theme-transition *::before, html.theme-transition *::after {
   transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important;
 }
 .nav__links a[aria-current="page"] { color: var(--ink); }
 
-/* Variacao com janela explicita (SDB.changeMark). Sem valor + janela, nao existe triangulo. */
+/* Change with an explicit window (SDB.changeMark). No value + window, no triangle. */
 .change { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--mono); font-size:11px; white-space:nowrap; }
 .change__tri { font-size:.75em; }
 .change__window { color:var(--ink-3); font-size:.9em; }
 .change--up { color:var(--up); } .change--down { color:var(--down); } .change--flat { color:var(--ink-2); }
-/* especificidade acima de .data-row span / .compare-line span, que pintariam o chip de cinza */
+/* specificity above .data-row span / .compare-line span, which would paint the chip gray */
 .change.change--up .change__tri, .change.change--up .change__value { color:var(--up); }
 .change.change--down .change__tri, .change.change--down .change__value { color:var(--down); }
 .change.change--flat .change__value { color:var(--ink-2); }
@@ -714,7 +714,7 @@ html.theme-transition, html.theme-transition *, html.theme-transition *::before,
 .compare-line .change, .compare-line .change span { font-size:12px; letter-spacing:0; }
 .stat__value .change { display:flex; justify-content:center; margin-top:4px; font-size:10px; }
 
-/* Compare: seletores em cards lado a lado, com icone do token e do ativo de lastro. */
+/* Compare: pickers in side-by-side cards, with token and backing-asset icons. */
 .compare-picks { display:grid; grid-template-columns:repeat(var(--cmp-n, 2), minmax(0, 1fr)) auto; gap:12px; align-items:stretch; margin:20px 0; }
 .compare-pick { display:flex; flex-direction:column; gap:10px; min-width:0; padding:14px; border:1px solid color-mix(in srgb, var(--asset) 28%, var(--line)); border-radius:var(--radius); background:color-mix(in srgb, var(--asset) 4%, var(--bg)); }
 .compare-pick__head { display:flex; align-items:center; gap:10px; min-width:0; }
@@ -735,7 +735,7 @@ html.theme-transition, html.theme-transition *, html.theme-transition *::before,
   .compare-pick__id b { font-size:14px; }
 }
 
-/* Tokens · Visualizador de Liq Pools */
+/* Tokens · Liq Pool Viewer */
 .pool-freshness { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin:0 0 20px; }
 .pool-freshness__item { min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:8px; }
 .pool-freshness dt { color:var(--ink-3); font:10px var(--mono); letter-spacing:.08em; text-transform:uppercase; }
@@ -768,10 +768,10 @@ html.theme-transition, html.theme-transition *, html.theme-transition *::before,
 
 /* ---------- fixeslastdeploy: grids, yield, pool viewer, compare ---------- */
 
-/* Live tokens: 3x3 no desktop (a Home carrega 9); 2 colunas em tablet, 1 no celular. */
+/* Live tokens: 3x3 on desktop (Home loads 9); 2 columns on tablet, 1 on phone. */
 .live-tokens-preview .grid { grid-template-columns:repeat(3, minmax(0, 1fr)); }
 
-/* Yield no card: pago observado + taxa estimada. Formula completa no title e no <details> da secao. */
+/* Card yield: observed payout + estimated rate. Full formula in the title and the section <details>. */
 .card__yield { display:grid; gap:6px; margin-top:14px; padding:10px 12px; border:1px solid var(--line-soft); border-radius:var(--radius-sm); background:color-mix(in srgb, var(--asset) 4%, transparent); text-align:left; }
 .card__yield-title { color:var(--ink-3); font:9px var(--mono); letter-spacing:.12em; }
 .card__yield-line { display:flex; justify-content:space-between; align-items:baseline; gap:10px; min-width:0; color:var(--ink-2); font-size:11px; }
@@ -783,7 +783,7 @@ html.theme-transition, html.theme-transition *, html.theme-transition *::before,
 .yield-disclosure summary { cursor:pointer; color:var(--ink-2); font:11px var(--mono); letter-spacing:.04em; }
 .yield-disclosure p { margin:8px 0 0; color:var(--ink-2); font-size:12px; line-height:1.55; }
 
-/* Stock cards: 3 colunas x 4 linhas (12 caixas), mesma largura de coluna do grid de Live tokens. */
+/* Stock cards: 3 columns x 4 rows (12 boxes), same column width as the Live tokens grid. */
 .stock-cards { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
 .stock-card__id { flex:1; }
 .stock-card__id span { min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -835,7 +835,7 @@ html.theme-transition, html.theme-transition *, html.theme-transition *::before,
 .pool-bubble-note { margin:12px 0 0; color:var(--ink-3); font:10px/1.5 var(--mono); }
 .pool-examples .pool-cards { margin-top:14px; }
 
-/* Compare: sem contorno no bloco, texto centralizado, cada slot e o TokenCard da Home + seletor. */
+/* Compare: no block outline, centered text, each slot is the Home TokenCard + picker. */
 .route-card.compare-page { border:0; padding-left:0; padding-right:0; background:none; }
 .compare-page .route-head { max-width:720px; margin-left:auto; margin-right:auto; text-align:center; }
 .compare-page .compare-title > *, .compare-page .compare-line > *, .compare-page .compare-line strong:first-child { text-align:center; }
@@ -888,10 +888,10 @@ html[data-theme="light"] .token-picker__pop { box-shadow:0 14px 34px rgba(0,0,0,
 .asset-intel-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:18px;margin-top:18px}.asset-intel-grid h3{margin:0 0 8px}.asset-token-row{grid-template-columns:minmax(150px,2fr) minmax(90px,1fr) minmax(120px,1fr) minmax(90px,.8fr);gap:8px}.asset-token-ident{display:inline-flex;align-items:center;gap:7px;min-width:0}.asset-token-ident__icon{display:inline-flex;flex:none}.asset-token-ident__icon .token-thumb{width:22px;height:22px}.asset-token-ident .token-link{gap:6px;min-width:0}.asset-token-ident .token-link .token-thumb{display:none}.asset-token-ident .token-link b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.asset-creators{display:grid;gap:4px}.asset-creator{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;color:inherit;text-decoration:none;transition:background-color .16s ease,border-color .16s ease}.asset-creator:hover,.asset-creator:focus-visible{background:color-mix(in srgb,var(--accent,#7c5cff) 8%,transparent);border-color:var(--ink-2);color:var(--ink)}.asset-creator .creator-mini-identicon{width:20px;height:20px;margin:0}.asset-creator__wallet{display:grid;gap:1px;min-width:0}.asset-creator__wallet code{overflow:hidden;color:var(--ink);font:10px var(--mono);text-overflow:ellipsis;white-space:nowrap}.asset-creator__wallet small{color:var(--ink-3);font:9px var(--ui)}.asset-creator__count{display:flex;align-items:baseline;gap:3px;min-width:48px;text-align:right}.asset-creator__count b{font:600 12px var(--mono);color:var(--ink)}.asset-creator__count small{color:var(--ink-3);font:9px var(--mono)}.asset-creator__arrow{color:var(--ink-3);font:12px var(--ui);padding-left:2px}.asset-creator-hint{margin:6px 2px 0;color:var(--ink-3);font:9px/1.35 var(--mono)}
 @media(max-width:720px){.asset-intel-grid{grid-template-columns:1fr}.asset-token-row{min-width:620px}}
 
-/* Navegacao entre rotas. O atributo hidden nativo precisa vencer o display dos componentes
-   (.hero{display:flex}, .btn{display:inline-flex}); sem isso o hero aparecia em toda rota. */
+/* Route navigation. The native hidden attribute must beat component display
+   (.hero{display:flex}, .btn{display:inline-flex}); otherwise the hero showed on every route. */
 [hidden] { display:none !important; }
-/* a tabela de tokens tem largura minima; sem min-width:0 a coluna do grid estourava a viewport no mobile */
+/* the token table has a min width; without min-width:0 the grid column overflowed the viewport on mobile */
 .asset-intel-grid > * { min-width:0; }
 .brand { color:var(--ink); }
 .brand:hover { color:var(--ink); opacity:.82; }
@@ -903,12 +903,12 @@ html[data-theme="light"] .token-picker__pop { box-shadow:0 14px 34px rgba(0,0,0,
 .data-row .asset-link, .compare-title a { text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:3px; }
 .compare-title a:hover { color:var(--ink); text-decoration-color:currentColor; }
 
-/* Tabelas de 5 colunas (creator record, Bigger outcomes): cabecalho e linhas no mesmo grid, sem largura minima.
-   No mobile cada linha vira um bloco: token na primeira linha, demais celulas rotuladas por data-label. */
+/* 5-column tables (creator record, Bigger outcomes): header and rows share one grid, no min width.
+   On mobile each row becomes a block: token on the first line, other cells labeled via data-label. */
 .data-table--cols5 .data-head, .data-table--cols5 .data-row { grid-template-columns:minmax(0,1.6fr) repeat(4,minmax(0,1fr)); min-width:0; }
 .data-table--cols5 .data-row > * { min-width:0; overflow-wrap:anywhere; }
 .data-table--cols5 .mint-copy { max-width:100%; }
-/* nos cards de meia largura (leaderboard, momentum) a largura minima de 620px escondia a ultima coluna atras de scroll */
+/* in half-width cards (leaderboard, momentum) the 620px min width hid the last column behind a scroll */
 @media (min-width:721px) {
   .route-grid .data-head, .route-grid .data-row { min-width:0; }
   .route-grid .data-row > * { min-width:0; }

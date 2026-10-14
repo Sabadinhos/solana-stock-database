@@ -85,7 +85,7 @@ def run(path):
 
 def main():
     interval = int(sys.argv[1]) if len(sys.argv) > 1 else 15 * 60
-    print(f"[scheduler] SDB ingestor — cycle every {interval}s.", flush=True)
+    print(f"[scheduler] SDB ingestor: cycle every {interval}s.", flush=True)
     cycle = 0
     while True:
         cycle += 1

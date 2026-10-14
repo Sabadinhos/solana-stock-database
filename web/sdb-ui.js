@@ -1,7 +1,7 @@
-/* SDB UI: JSON spec -> DOM, sem framework.
-   SDB.render(container, specs) desenha e reaproveita nos por chave.
-   SDB.mapToken(raw, opts) converte a resposta da API em spec.
-   Classes seguem sdb-ui.css: card, row, creator, avatar, pad, trend. */
+/* SDB UI: JSON spec -> DOM, no framework.
+   SDB.render(container, specs) draws and reuses nodes by key.
+   SDB.mapToken(raw, opts) converts the API response into a spec.
+   Classes follow sdb-ui.css: card, row, creator, avatar, pad, trend. */
 
 (function (global) {
   'use strict';
@@ -41,7 +41,7 @@
     if (node && node.textContent !== value) node.textContent = value;
   }
 
-  /* ---------- catalogo ---------- */
+  /* ---------- catalog ---------- */
 
   var ASSETS = {
     NVDAx:{color:'#4DD8FF',mono:'NV',logo:'https://cdn.simpleicons.org/nvidia'}, SPYx:{color:'#F2D544',mono:'SP',logo:null},
@@ -64,8 +64,8 @@
     return { color:'#8C8C8C', mono:raw.replace(/[^A-Za-z]/g,'').slice(0,2).toUpperCase() || '??', logo:null };
   }
 
-  /* Avatar: imagem quando existe, monograma quando nao. O monograma e estado final,
-     nao placeholder: se a logo faltar, a interface continua legivel. */
+  /* Avatar: image when available, monogram otherwise. The monogram is a final state,
+     not a placeholder: if the logo is missing, the UI stays readable. */
   function avatar(ticker, size, imageUrl) {
     var meta = assetMeta(ticker);
     var box = el('span', {
@@ -95,8 +95,8 @@
     return box;
   }
 
-  /* Triangulo direcional so existe com variacao real E janela de tempo explicita.
-     Sem valor ou sem janela nao ha marca: tendencia nunca e inventada. */
+  /* Direction triangle only exists with a real change AND an explicit time window.
+     No value or no window, no mark: trend is never invented. */
   function changeMark(value, windowLabel, subject) {
     var n = (value === null || value === undefined || value === '') ? NaN : Number(value);
     if (!isFinite(n) || !windowLabel) return null;
@@ -113,7 +113,7 @@
     return mark ? mark.outerHTML : '\u2014';
   }
 
-  /* ---------- formatadores ---------- */
+  /* ---------- formatters ---------- */
 
   function compact(n) {
     if (n === null || n === undefined || isNaN(n)) return '--';
@@ -129,10 +129,10 @@
   function day(iso) { return iso ? String(iso).slice(0, 10) : '--'; }
   function shortMint(m) { return m ? m.slice(0, 4) + '\u2026' + m.slice(-4) : '--'; }
 
-  /* ---------- yield: observado e estimado, nunca prometido ----------
-     Mesma formula de m3.fee_distribution_simulation (taxa diaria por dolar mantido):
-     volume 24h indexado x taxa de transferencia empilhada / market cap.
-     Qualquer entrada ausente ou <= 0 torna a estimativa indisponivel, nunca zero. */
+  /* ---------- yield: observed and estimated, never promised ----------
+     Same formula as m3.fee_distribution_simulation (daily rate per dollar held):
+     indexed 24h volume x stacked transfer fee / market cap.
+     Any missing or <= 0 input makes the estimate unavailable, never zero. */
 
   var YIELD_FORMULA = 'Est. 24h fee rate = indexed 24h volume \u00d7 stacked transfer fee \u00f7 market cap. Period: last 24h of indexed volume. Source: SDB index (StonkFun public API). Assumes the full stacked fee is distributed pro rata to holders; actual distribution may differ. Observed data, not a promise, guarantee or investment advice.';
 
@@ -161,11 +161,11 @@
   function payoutText(t) {
     if (t.paidOut === null || t.paidOut === undefined || isNaN(t.paidOut)) return 'No payouts indexed';
     var n = Number(t.payouts);
-    // payout vem na quote direta do token, nao no ativo terminal (rewardAsset); sem quoteSymbol na fonte, a unidade fica generica
+    // payout is in the token direct quote, not the terminal asset (rewardAsset); without a source quoteSymbol, the unit stays generic
     return compact(t.paidOut) + ' ' + (t.payoutUnit || 'quote units') + (isFinite(n) && t.payouts !== null && t.payouts !== undefined ? ' \u00b7 ' + compact(n) + (n === 1 ? ' payout' : ' payouts') : '');
   }
 
-  /* Bloco "Yield" do card: pago observado + taxa estimada com formula visivel. */
+  /* Card "Yield" block: observed payout + estimated rate with visible formula. */
   function yieldBlock(t) {
     var observed = el('b', { class: 'card__yield-value', text: payoutText(t), title: PAYOUT_UNIT_NOTE });
     var rate = el('b', { class: 'card__yield-value', text: yieldText(t) });
@@ -181,7 +181,7 @@
     return box;
   }
 
-  /* ---------- stats do drawer Display ---------- */
+  /* ---------- Display drawer stats ---------- */
 
   var STATS = {
     mc:         { label: function () { return 'MC'; }, value: function (t) { return usd(t.marketCap); }, change: function (t) { return [t.change24h, '24h', '24h price change']; } },
@@ -236,7 +236,7 @@
     return btn;
   }
 
-  /* ---------- componentes ---------- */
+  /* ---------- components ---------- */
 
   var registry = {};
   function component(type, factory) { registry[type] = factory; }
@@ -344,7 +344,7 @@
     };
   });
 
-  /* /api/ticker nao traz variacao nem janela de tempo, entao o ticker nao mostra triangulo. */
+  /* /api/ticker has no change or time window, so the ticker shows no triangle. */
   component('TickerItem', function (props) {
     var meta = assetMeta(props.asset);
     var price = el('span', { class: 'ticker__price', text: props.price != null ? Number(props.price).toFixed(2) : '--' });
@@ -369,7 +369,7 @@
     };
   });
 
-  /* ---------- render com reaproveitamento por key ---------- */
+  /* ---------- render with reuse by key ---------- */
 
   var mounted = new WeakMap();
 
@@ -403,7 +403,7 @@
     mounted.set(container, next);
   }
 
-  /* ---------- adaptador da API ---------- */
+  /* ---------- API adapter ---------- */
 
   function mapToken(raw, opts) {
     opts = opts || {};

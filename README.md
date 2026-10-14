@@ -5,6 +5,23 @@
 
 <p align="center"><a href="https://solanastockdatabase.com">Live site</a> &middot; <a href="docs/tutorial.md">Tutorial</a> &middot; <a href="docs/examples/README.md">Examples</a> &middot; <a href="docs/rpc-strategy.md">RPC strategy</a> &middot; <a href="bench/RESULTS.md">Benchmark</a> &middot; <a href="LICENSE">MIT</a></p>
 
+## Bring your own RPC
+
+SDB reads Solana through one RPC endpoint. You provide it.
+
+1. Copy the example config: `cp .env.example .env`
+2. Set `RPC_URL` in `.env`:
+
+```sh
+RPC_URL=https://mainnet.helius-rpc.com/?api-key=YOUR_KEY
+```
+
+- Used by the on-chain step (holders, supply, events) and the Meteora DBC collector.
+- Never committed. `.env` is git-ignored.
+- Empty `RPC_URL`: the API and UI still run, on-chain collection is skipped.
+
+> **Tested only with Helius so far.** The free plan (1M credits/month) is enough with the defaults. Other providers should work for standard JSON-RPC methods, but `getAsset` (DAS) and `getProgramAccountsV2` are Helius-specific and are untested elsewhere.
+
 ## What you get
 
 <p align="center"><img src="docs/assets/tokens.png" alt="Live token cards with backing asset logos" width="900"></p>

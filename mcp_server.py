@@ -1,19 +1,19 @@
-"""SDB – servidor MCP (JSON-RPC 2.0 sobre stdio, stdlib puro).
+"""SDB: MCP server (JSON-RPC 2.0 over stdio, pure stdlib).
 
-Cliente remoto da API hospedada: a tool do MCP chama os MESMOS endpoints da web,
-provando o argumento "um motor, duas portas". Roda na máquina do cliente, então
-não lê o SQLite do VPS; chama a API.
+Remote client of the hosted API: MCP tools call the SAME endpoints as the web app,
+proving the "one engine, two doors" argument. Runs on the client machine, so it
+does not read the VPS SQLite; it calls the API.
 
 Env:
-  SDB_API_URL  (padrão http://localhost:8090) – URL pública da API
-  SDB_API_KEY  (opcional) – chave do tier pago (Authorization: Bearer)
+  SDB_API_URL  (default http://localhost:8090): public API URL
+  SDB_API_KEY  (optional): paid tier key (Authorization: Bearer)
 
-Uso (Claude Desktop / Claude Code / Cursor):
+Usage (Claude Desktop / Claude Code / Cursor):
   python mcp_server.py
 
-Bloco de config para Claude Desktop (claude_desktop_config.json):
+Config block for Claude Desktop (claude_desktop_config.json):
   {"mcpServers": {"sdb": {"command": "python",
-     "args": ["/caminho/para/mcp_server.py"],
+     "args": ["/path/to/mcp_server.py"],
      "env": {"SDB_API_URL": "http://localhost:8090"}}}}
 """
 import json
@@ -35,77 +35,77 @@ def _schema(props, required):
 
 TOOLS = [
     {"name": "search_tokens",
-     "description": "Busca memstocks por nome, símbolo ou mint.",
+     "description": "Search memstocks by name, symbol or mint.",
      "inputSchema": _schema({
-         "q": {"type": "string", "description": "termo de busca"},
-         "limit": {"type": "integer", "description": "máx resultados (30)"},
+         "q": {"type": "string", "description": "search term"},
+         "limit": {"type": "integer", "description": "max results (30)"},
      }, ["q"])},
     {"name": "get_token",
-     "description": "Métricas de um memstock: lastro (M1), rendimento em ação (M3) e criador (M4).",
+     "description": "Memstock metrics: backing (M1), yield in stock (M3) and creator (M4).",
      "inputSchema": _schema({
-         "mint": {"type": "string", "description": "endereço do mint"},
+         "mint": {"type": "string", "description": "mint address"},
      }, ["mint"])},
     {"name": "get_decomposition",
-     "description": "Separa o movimento USD do token do movimento do ativo terminal, quando há série Pyth persistida.",
+     "description": "Separates the token USD move from the terminal asset move, when a persisted Pyth series exists.",
      "inputSchema": _schema({
-         "mint": {"type": "string", "description": "endereço do mint"},
-         "window": {"type": "integer", "description": "janela em dias (7)"},
+         "mint": {"type": "string", "description": "mint address"},
+         "window": {"type": "integer", "description": "window in days (7)"},
      }, ["mint"])},
     {"name": "get_dbc",
-     "description": "Launch Passport Meteora DBC de um token, usando somente pools persistidos com correspondência exata de mint.",
+     "description": "Meteora DBC Launch Passport for a token, using only persisted pools with an exact mint match.",
      "inputSchema": _schema({
-         "mint": {"type": "string", "description": "endereço do mint"},
-         "limit": {"type": "integer", "description": "máx pools (20)"},
+         "mint": {"type": "string", "description": "mint address"},
+         "limit": {"type": "integer", "description": "max pools (20)"},
      }, ["mint"])},
     {"name": "get_dbc_pool",
-     "description": "Detalhes e snapshots históricos de um pool Meteora DBC persistido.",
+     "description": "Details and historical snapshots of a persisted Meteora DBC pool.",
      "inputSchema": _schema({
-         "address": {"type": "string", "description": "endereço do pool"},
+         "address": {"type": "string", "description": "pool address"},
      }, ["address"])},
     {"name": "get_rpc_stats",
      "description": "RPC calls, estimated Helius credits, 429s and cache hits per method and per day.",
      "inputSchema": _schema({}, [])},
     {"name": "get_news",
-     "description": "Evidências editoriais com fonte original; vazio quando nenhum feed verificado está configurado.",
+     "description": "Editorial evidence with original source; empty when no verified feed is configured.",
      "inputSchema": _schema({
-         "limit": {"type": "integer", "description": "máx itens (30)"},
-         "asset": {"type": "string", "description": "filtro opcional de asset"},
+         "limit": {"type": "integer", "description": "max items (30)"},
+         "asset": {"type": "string", "description": "optional asset filter"},
      }, [])},
     {"name": "list_curated_creators",
-     "description": "Registry de identidades de creators somente quando existe fonte curada verificável.",
+     "description": "Creator identity registry, only when a verifiable curated source exists.",
      "inputSchema": _schema({
-         "limit": {"type": "integer", "description": "máx itens (50)"},
+         "limit": {"type": "integer", "description": "max items (50)"},
      }, [])},
     {"name": "get_creator",
-     "description": "Histórico de uma carteira criadora: lançamentos, graduados, pico.",
+     "description": "Creator wallet history: launches, graduated, peak.",
      "inputSchema": _schema({
-         "creator": {"type": "string", "description": "endereço da carteira"},
+         "creator": {"type": "string", "description": "wallet address"},
      }, ["creator"])},
     {"name": "list_assets",
-     "description": "Ativos terminais (xStocks, PreStocks) com contagem e yield.",
+     "description": "Terminal assets (xStocks, PreStocks) with counts and yield.",
      "inputSchema": _schema({}, [])},
     {"name": "get_attention",
-     "description": "Índice de atenção: lançamentos por ativo terminal na janela.",
+     "description": "Attention index: launches per terminal asset in the window.",
      "inputSchema": _schema({
-         "days": {"type": "integer", "description": "janela em dias (7)"},
+         "days": {"type": "integer", "description": "window in days (7)"},
      }, [])},
     {"name": "get_survival",
-     "description": "Taxa de graduação e drawdown por categoria de quote.",
+     "description": "Graduation rate and drawdown by quote category.",
      "inputSchema": _schema({}, [])},
     {"name": "leaderboard_rendimento",
-     "description": "Quais memstocks mais pagaram no ativo subjacente (M3).",
+     "description": "Which memstocks paid the most in the underlying asset (M3).",
      "inputSchema": _schema({
          "category": {"type": "string", "description": "categoria (xstock)"},
-         "limit": {"type": "integer", "description": "máx (50)"},
+         "limit": {"type": "integer", "description": "max (50)"},
      }, [])},
     {"name": "top_tokens",
-     "description": "Top N memstocks (stock tokens) por market cap. Use para perguntas como 'top 10 stock tokens hoje'.",
+     "description": "Top N memstocks (stock tokens) by market cap. Use for questions like 'top 10 stock tokens today'.",
      "inputSchema": _schema({
-         "limit": {"type": "integer", "description": "máx resultados (10)"},
-         "category": {"type": "string", "description": "filtro opcional: xstock, prestock"},
+         "limit": {"type": "integer", "description": "max results (10)"},
+         "category": {"type": "string", "description": "optional filter: xstock, prestock"},
      }, [])},
     {"name": "get_stats",
-     "description": "Sistema vivo: snapshots coletados, tokens, recompensas.",
+     "description": "Live system: collected snapshots, tokens, rewards.",
      "inputSchema": _schema({}, [])},
 ]
 
@@ -160,7 +160,7 @@ def call_tool(name, args):
         return api_get(f"/api/cards?sort=mc&limit={a.get('limit', 10)}")
     if name == "get_stats":
         return api_get("/api/stats")
-    raise ValueError(f"tool desconhecida: {name}")
+    raise ValueError(f"unknown tool: {name}")
 
 
 def handle(req):

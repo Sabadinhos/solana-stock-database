@@ -1,8 +1,8 @@
-"""SDB — cartão OG compartilhável (recibo por token).
+"""SDB: shareable OG card (per-token receipt).
 
-Gera PNG 1200x630 (padrão twitter:summary_large_image) com Pillow. O PNG é
-servido em /og/<mint>.png e referenciado pelas meta tags de /t/<mint>, para o
-preview de link funcionar no X / Discord sem login nem carteira.
+Renders a 1200x630 PNG (twitter:summary_large_image standard) with Pillow. The PNG is
+served at /og/<mint>.png and referenced by the /t/<mint> meta tags, so link
+previews work on X / Discord without login or wallet.
 """
 
 import io
@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1200, 630
 
-# paleta do tema claro (ver web/style.css)
+# light theme palette (see web/style.css)
 BG = (250, 245, 236)        # --bg #faf5ec
 SURFACE = (255, 255, 255)   # --surface
 BORDER = (230, 220, 201)    # --border
@@ -175,11 +175,11 @@ def _text_w(draw, xy, text, font, fill):
 
 
 def build_png(mint, token, rewards):
-    """token: dict de m1.token_metrics. rewards: dict de m3.token_rewards (ou None)."""
+    """token: dict from m1.token_metrics. rewards: dict from m3.token_rewards (or None)."""
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
 
-    # faixa superior (cabeçalho)
+    # top band (header)
     d.rectangle([0, 0, W, 84], fill=SURFACE)
     d.line([0, 84, W, 84], fill=BORDER, width=1)
     _text_w(d, (64, 18), "SOLANA STOCK DATABASE", _font(26, semibold=True), TEXT)
@@ -192,7 +192,7 @@ def build_png(mint, token, rewards):
     name = token.get("name") or ""
     terminal = (token.get("terminal") or {}).get("symbol") or ""
 
-    # logo circular
+    # circular logo
     logo = _fetch_logo(token.get("image_url"))
     y_sym = 132
     if logo:
@@ -200,7 +200,7 @@ def build_png(mint, token, rewards):
         img.paste(circ, (64, y_sym), circ)
         sym_x = 196
     else:
-        # monograma
+        # monogram
         d.ellipse([64, y_sym, 64 + 104, y_sym + 104], fill=ACCENT)
         mono = (symbol[:2]).upper()
         f = _font(40, bold=True)
@@ -208,7 +208,7 @@ def build_png(mint, token, rewards):
         _text_w(d, (64 + 52 - tw / 2, y_sym + 26), mono, f, (255, 255, 255))
         sym_x = 196
 
-    # símbolo + nome
+    # symbol + name
     sym_font = _font(64, bold=True)
     sym_w = d.textlength(symbol, font=sym_font)
     _text_w(d, (sym_x, y_sym + 6), symbol, sym_font, TEXT)
@@ -222,15 +222,15 @@ def build_png(mint, token, rewards):
             d.rounded_rectangle([pill_x, y_sym + 16, pill_x + pw + 36, y_sym + 58],
                                 radius=21, fill=GREEN_SOFT)
             _text_w(d, (pill_x + 18, y_sym + 26), pill_text, pill_font, GREEN)
-    # nome
+    # name
     name_font = _font(26)
     name = _ellipsize(name, name_font, W - sym_x - 64)
     _text_w(d, (sym_x, y_sym + 74), name, name_font, MUTED)
 
-    # linha de divisão
+    # divider line
     d.line([64, 400, W - 64, 400], fill=BORDER, width=1)
 
-    # faixa de estatísticas (3 blocos)
+    # stats band (3 blocks)
     cells = [
         ("MARKET CAP", _usd((token.get("market") or {}).get("marketCapUsd")), ""),
         ("STACKED TAX", _bps(token.get("stackedTransferTaxBps")),
@@ -249,7 +249,7 @@ def build_png(mint, token, rewards):
         if sub:
             _text_w(d, (x, 526), sub, _font(22), MUTED)
 
-    # rodapé
+    # footer
     d.line([64, 578, W - 64, 578], fill=BORDER, width=1)
     _text_w(d, (64, 588), "Statistics only — not investment advice", _font(20), MUTED)
     dom = "Solana Stock Database"
@@ -262,7 +262,7 @@ def build_png(mint, token, rewards):
 
 
 def share_meta(token, rewards):
-    """Meta tags (título + descrição) para /t/<mint>."""
+    """Meta tags (title + description) for /t/<mint>."""
     symbol = token.get("symbol") or "?"
     name = token.get("name") or ""
     terminal = (token.get("terminal") or {}).get("symbol") or ""

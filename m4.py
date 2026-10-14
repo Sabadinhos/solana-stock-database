@@ -1,7 +1,7 @@
-"""SDB — M4 Histórico de Criador (núcleo).
+"""SDB: M4 creator history (core).
 
-Reputação por carteira criadora, sem indexação on-chain: cruza `launches` (todos os
-lançamentos, inclusive mortos) com `tokens` (vivos, com status e pico).
+Reputation per creator wallet, without on-chain indexing: joins `launches` (all
+launches, including dead ones) with `tokens` (live, with status and peak).
 """
 import statistics
 from datetime import datetime
@@ -30,19 +30,19 @@ def creator_stats(conn, creator):
     graduated = [t for t in live if t["status"] == "graduated"]
     peaks = [t["peak_market_cap_usd"] for t in live if t["peak_market_cap_usd"]]
 
-    # tempo até graduar (proxy de "tempo até o pico")
+    # time to graduate (proxy for "time to peak")
     times_to_grad = []
     for t in graduated:
         c = _parse(t["created_at"])
         g = _parse(t["graduated_at"])
-        if c and g and g >= c:  # graduated_at anterior a created_at = dado inconsistente, ignora
+        if c and g and g >= c:  # graduated_at before created_at = inconsistent data, skip
             times_to_grad.append((g - c).total_seconds() / 60.0)
 
-    # intervalo entre lançamentos (min)
+    # interval between launches (min)
     created = [c for c in (_parse(l["created_at"]) for l in lau) if c]
     intervals = []
     for a, b in zip(created, created[1:]):
-        intervals.append((b - a).total_seconds() / 3600.0)  # horas
+        intervals.append((b - a).total_seconds() / 3600.0)  # hours
 
     return {
         "creator": creator,
@@ -68,7 +68,7 @@ def creator_stats(conn, creator):
 
 
 def top_creators(conn, limit=50, min_launches=1):
-    """Ranking de criadores reincidentes."""
+    """Ranking of repeat creators."""
     rows = conn.execute(
         """SELECT creator, COUNT(*) c FROM launches
            GROUP BY creator HAVING c >= ? ORDER BY c DESC LIMIT ?""",
@@ -83,11 +83,11 @@ def top_creators(conn, limit=50, min_launches=1):
 
 
 def early_wallets(conn, limit=50):
-    """Ranking das carteiras mais antigas (criadores), com o status agregado da posição.
+    """Ranking of the oldest wallets (creators), with aggregated position status.
 
-    "Early" = data do primeiro lançamento (quem entrou cedo na plataforma). A posição é
-    agregada dos tokens vivos da carteira: quanto deployou no lançamento, quanto vale
-    agora, quanto vale no pico, e o placar de graduados vs mortos.
+    "Early" = date of the first launch (who joined the platform early). The position is
+    aggregated over the wallet's live tokens: amount deployed at launch, current value,
+    peak value, and the graduated vs dead tally.
     """
     rows = conn.execute(
         """SELECT creator,
@@ -133,10 +133,10 @@ def early_wallets(conn, limit=50):
 
 
 def token_changes(conn, mint):
-    """Diff launch -> estado atual de UM token: o que o dev alterou nele.
+    """Diff launch -> current state of ONE token: what the dev changed in it.
 
-    Compara o registro de lançamento (`launches`) com o estado vivo (`tokens`).
-    Captura fee, quote e mode quando mudaram, além da trajetória de status.
+    Compares the launch record (`launches`) with the live state (`tokens`).
+    Captures fee, quote and mode when they changed, plus the status trajectory.
     """
     t = conn.execute("SELECT * FROM tokens WHERE mint=?", (mint,)).fetchone()
     if t is None:
@@ -186,9 +186,9 @@ def token_changes(conn, mint):
 
 
 def creator_portfolio(conn, creator, exclude_mint=None, limit=60, offset=0):
-    """Todos os lançamentos de uma carteira (vivos e mortos), excluindo um mint.
+    """All launches of a wallet (live and dead), excluding one mint.
 
-    `launches` é a fonte de verdade (inclui mortos); `tokens` dá o estado atual.
+    `launches` is the source of truth (includes dead ones); `tokens` gives the current state.
     """
     rows = conn.execute(
         """SELECT l.mint, l.symbol AS l_symbol, l.name, l.created_at,

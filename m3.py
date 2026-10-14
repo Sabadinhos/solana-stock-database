@@ -1,13 +1,13 @@
-"""SDB — M3 Rendimento em Ação (núcleo, a manchete do produto).
+"""SDB: M3 yield in stock (core, the product headline).
 
-Reward coins pagam o imposto de transferência aos holders no token do quote. Um reward
-coin pareado a NVDAX paga NVDAX. Aqui medimos isso, em unidades do ativo terminal.
+Reward coins pay the transfer tax to holders in the quote token. A reward
+coin paired with NVDAX pays NVDAX. This module measures that, in terminal asset units.
 """
 
 
 def resolve_terminal(conn, quote_mint, quote_symbol):
-    """Resolve o ativo terminal de uma reward coin: se o quote é outro token StonkFun,
-    usa o terminal já calculado; senão o quote é o terminal."""
+    """Resolve the terminal asset of a reward coin: if the quote is another StonkFun token,
+    use its precomputed terminal; otherwise the quote is the terminal."""
     if quote_mint:
         r = conn.execute(
             "SELECT terminal_symbol, terminal_category, terminal_category_label "
@@ -20,7 +20,7 @@ def resolve_terminal(conn, quote_mint, quote_symbol):
 
 
 def rendimento_por_terminal(conn):
-    """Agrega o rendimento distribuído por ativo terminal. Retorna ranking por total."""
+    """Aggregate distributed yield by terminal asset. Return a ranking by total."""
     rows = conn.execute("SELECT * FROM rewards").fetchall()
     agg = {}
     for r in rows:
@@ -39,9 +39,9 @@ def rendimento_por_terminal(conn):
 
 
 def leaderboard_rendimento(conn, category="xstock", limit=50):
-    """Quais memstocks (reward coins) mais pagaram em ativos de uma categoria (ex. xstock).
+    """Which memstocks (reward coins) paid the most in assets of a category (e.g. xstock).
 
-    Ordena pelo total distribuído em unidades do ativo terminal.
+    Sorted by total distributed in terminal asset units.
     """
     rows = conn.execute("SELECT * FROM rewards").fetchall()
     results = []
@@ -111,7 +111,7 @@ def fee_distribution_simulation(held_usd, volume_24h_usd, market_cap_usd,
 
 
 def token_rewards(conn, mint):
-    """Detalhe de rendimento de um reward coin específico."""
+    """Yield detail for a specific reward coin."""
     r = conn.execute("SELECT * FROM rewards WHERE mint=?", (mint,)).fetchone()
     if r is None:
         return None

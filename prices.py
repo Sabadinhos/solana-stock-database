@@ -1,7 +1,7 @@
-"""SDB — preço em USD dos ativos subjacentes (xStocks -> ação real).
+"""SDB: USD price of underlying assets (xStocks -> real stock).
 
-Fonte: Yahoo Finance (chart endpoint, sem chave). Não vem da API StonkFun.
-Cache em `terminal_prices` para nunca depender da fonte no momento do serve.
+Source: Yahoo Finance (chart endpoint, no key). Not from the StonkFun API.
+Cached in `terminal_prices` so serving never depends on the source.
 """
 
 import json
@@ -9,7 +9,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
-# terminal_symbol -> (ticker Yahoo, nome de exibição)
+# terminal_symbol -> (Yahoo ticker, display name)
 TICKERS = {
     "SPYX": ("SPY", "S&P 500"),
     "NVDAX": ("NVDA", "NVIDIA"),
@@ -69,9 +69,9 @@ def _fresh(row):
 
 
 def get_prices(conn, symbols):
-    """symbols: lista de terminal_symbol (ex. NVDAX). Devolve {symbol: preço_usd}.
+    """symbols: list of terminal_symbol (e.g. NVDAX). Returns {symbol: price_usd}.
 
-    Usa cache em `terminal_prices`; busca o que estiver ausente/vencido no Yahoo.
+    Uses the `terminal_prices` cache; fetches missing/stale entries from Yahoo.
     """
     tickers = {s: TICKERS[s][0] for s in symbols if s in TICKERS}
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -103,7 +103,7 @@ def get_prices(conn, symbols):
         )
     conn.commit()
 
-    # fallback: usa o último valor em cache mesmo se vencido
+    # fallback: use the last cached value even if stale
     for s in tickers:
         if s not in prices:
             row = conn.execute(
@@ -115,7 +115,7 @@ def get_prices(conn, symbols):
 
 
 def ticker(conn):
-    """Feed da home: ações subjacentes em ordem de participação, com preço e %."""
+    """Home feed: underlying stocks ordered by share, with price and %."""
     total = conn.execute("SELECT COUNT(*) c FROM tokens").fetchone()["c"]
     rows = conn.execute(
         """SELECT terminal_symbol, COUNT(*) c

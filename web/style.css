@@ -1,18 +1,18 @@
 :root {
   --font-text: 'Inter', -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-num: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* superficies (tema claro, neutro frio) */
+  /* surfaces (light theme, cool neutral) */
   --bg: #f7f8fa;
   --surface: #ffffff;
   --surface-2: #f1f2f5;
   --border: #e4e6eb;
   --text: #16181d;
   --muted: #6b7280;
-  /* marca (assinatura Solana, NAO e cor de dado) */
+  /* brand (Solana signature, NOT a data color) */
   --accent: #7c3aed;
   --accent-soft: #efe7fe;
   --brand-grad: linear-gradient(90deg, #7c3aed 0%, #0f9f6e 100%);
-  /* dado (semantico) */
+  /* data (semantic) */
   --orange: #b45309;
   --green: #0f9f6e;
   --green-soft: #dcf5ec;
@@ -25,18 +25,18 @@
 }
 
 [data-theme="dark"] {
-  /* superficies escuras do terminal */
+  /* dark terminal surfaces */
   --bg: #0e0e10;
   --surface: #161619;
   --surface-2: #1c1c1d;
   --border: #26262b;
   --text: #f4f4f5;
   --muted: #8a8a94;
-  /* marca */
+  /* brand */
   --accent: #8b5cf6;
   --accent-soft: #221b33;
   --brand-grad: linear-gradient(90deg, #9945ff 0%, #14f195 100%);
-  /* dado */
+  /* data */
   --orange: #f5a623;
   --green: #22d39a;
   --green-soft: #10281f;
@@ -137,7 +137,7 @@ button { font: inherit; cursor: pointer; }
   letter-spacing: -0.5px;
   margin-bottom: 26px;
 }
-/* wordmark com a assinatura Solana em gradiente */
+/* wordmark with the Solana signature gradient */
 .hero h1 a, #brand {
   background: var(--brand-grad);
   -webkit-background-clip: text;
@@ -648,7 +648,7 @@ button { font: inherit; cursor: pointer; }
 .cmp-metric { font-size: 12px; color: var(--muted); text-align: center; white-space: nowrap; }
 .cmp-val { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 13.5px; display: flex; align-items: center; gap: 5px; }
 
-/* ---- signo por ativo subjacente (estagio 1: capsula colorida) ---- */
+/* ---- sign per underlying asset (stage 1: colored pill) ---- */
 .asset-chip {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 2px 9px; border-radius: 6px;
@@ -659,7 +659,7 @@ button { font: inherit; cursor: pointer; }
   border: 1px solid transparent;
 }
 
-/* ---- scrollbar elegante + sem rolagem lateral ---- */
+/* ---- clean scrollbar + no horizontal scroll ---- */
 html, body { overflow-x: clip; }
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 html { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }

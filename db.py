@@ -1,7 +1,7 @@
-"""SDB — camada de armazenamento (D1-7).
+"""SDB: storage layer (D1-7).
 
-SQLite em data/sdb.db. Série temporal (tabela `snapshots`) é o fosso: cada ciclo do
-ingestor grava um registro novo, nunca sobrescreve.
+SQLite at data/sdb.db. The time series (`snapshots` table) is the moat: each ingestor
+cycle writes a new record and never overwrites.
 """
 import os
 import sqlite3
@@ -24,11 +24,11 @@ CREATE TABLE IF NOT EXISTS tokens (
   graduated_at TEXT, created_at TEXT,
   price_usd REAL, market_cap_usd REAL, fdv_usd REAL,
   volume_24h_usd REAL, price_change_24h REAL, peak_market_cap_usd REAL,
-  -- M1: cadeia de lastro (resolvida)
+  -- M1: backing chain (resolved)
   depth INTEGER, terminal_mint TEXT, terminal_symbol TEXT,
   terminal_name TEXT, terminal_category TEXT, terminal_category_label TEXT,
   chain_json TEXT, is_cycle INTEGER,
-  -- links/metadata do token (da API StonkFun) + taxa empilhada da cadeia
+  -- token links/metadata (from the StonkFun API) + stacked tax of the chain
   image_url TEXT, stacked_tax_bps INTEGER, twitter TEXT, website TEXT
 );
 
@@ -378,18 +378,18 @@ def init_db(conn=None):
     if is_split():
         return
     c.executescript(SCHEMA)
-    # migração: colunas de config adicionadas aos snapshots (para rastrear mudanças)
+    # migration: config columns added to snapshots (to track changes)
     for col, decl in (("transfer_fee_bps", "INTEGER"),
                       ("quote_symbol", "TEXT"),
                       ("mode", "TEXT")):
         has = c.execute(f"PRAGMA table_info(snapshots)").fetchall()
         if not any(r[1] == col for r in has):
             c.execute(f"ALTER TABLE snapshots ADD COLUMN {col} {decl}")
-    # migração: concentração de holders (on-chain, Helius)
+    # migration: holder concentration (on-chain, Helius)
     has = c.execute("PRAGMA table_info(tokens)").fetchall()
     if not any(r[1] == "holder_top10_share" for r in has):
         c.execute("ALTER TABLE tokens ADD COLUMN holder_top10_share REAL")
-    # migração: links/metadata + taxa empilhada (colunas que a API StonkFun entrega)
+    # migration: links/metadata + stacked tax (columns the StonkFun API provides)
     for col, decl in (("image_url", "TEXT"), ("stacked_tax_bps", "INTEGER"),
                       ("twitter", "TEXT"), ("website", "TEXT")):
         has = c.execute("PRAGMA table_info(tokens)").fetchall()

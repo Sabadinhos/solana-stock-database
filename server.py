@@ -1,14 +1,14 @@
-"""SDB — API REST (D1-5), stdlib http.server, lendo do SQLite (nunca da StonkFun direto).
+"""SDB: REST API (D1-5), stdlib http.server, reading from SQLite (never StonkFun directly).
 
 Endpoints:
-  GET /api/stats                          -> sistema vivo (contador de snapshots)
-  GET /api/token/<mint>                   -> M1 + M3 + M4 de um token
-  GET /api/leaderboard/rendimento         -> M3 (quais memstocks mais pagaram em X)
-  GET /api/leaderboard/lastro             -> M1 (lastro mais frágil)
-  GET /api/creator/<addr>                 -> M4 (histórico do criador)
-  GET /api/search?q=                      -> busca por nome/símbolo/mint
-  GET /api/graph/stats                    -> agregados do D1-1 (histograma de profundidade)
-  /static e / -> frontend estático (web/)
+  GET /api/stats                          -> live system (snapshot counter)
+  GET /api/token/<mint>                   -> M1 + M3 + M4 for a token
+  GET /api/leaderboard/rendimento         -> M3 (which memstocks paid the most in X)
+  GET /api/leaderboard/lastro             -> M1 (most fragile backing)
+  GET /api/creator/<addr>                 -> M4 (creator history)
+  GET /api/search?q=                      -> search by name/symbol/mint
+  GET /api/graph/stats                    -> D1-1 aggregates (depth histogram)
+  /static and / -> static frontend (web/)
 """
 import hashlib
 import math
@@ -74,7 +74,7 @@ def _query_float(qs, key, default, minimum=None, maximum=None):
 
 
 def _auth(conn, headers):
-    """Valida Authorization: Bearer <chave> contra api_keys. Retorna dict(tier,...) ou None."""
+    """Validate Authorization: Bearer <chave> against api_keys. Returns dict(tier,...) or None."""
     auth = headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
         return None
@@ -87,12 +87,12 @@ def _auth(conn, headers):
 
 _free_hits = {}
 _free_lock = threading.Lock()
-FREE_RATE = 120  # req/min por visitante no tier free (uma página faz ~10 chamadas)
+FREE_RATE = 120  # req/min per visitor on the free tier (one page makes ~10 calls)
 
 
 def _client_ip(handler):
-    """IP real do visitante. Atrás de nginx/Cloudflare o peer é loopback; só então
-    confiamos nos cabeçalhos do proxy."""
+    """Real visitor IP. Behind nginx/Cloudflare the peer is loopback; only then
+    are the proxy headers trusted."""
     peer = handler.client_address[0]
     if peer in ("127.0.0.1", "::1") or peer.startswith("172."):
         for h in ("CF-Connecting-IP", "X-Real-IP"):
@@ -163,7 +163,7 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "SDB/0.1"
 
     def log_message(self, fmt, *args):
-        pass  # silencia o log padrão
+        pass  # silence the default log
 
     def _send(self, code, obj):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -860,7 +860,7 @@ def main(port=8080):
     if not db.is_split():
         db.init_db()
     srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    print(f"SDB API ouvindo em http://localhost:{port}")
+    print(f"SDB API listening on http://localhost:{port}")
     srv.serve_forever()
 
 

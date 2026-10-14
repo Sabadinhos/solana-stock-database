@@ -1,8 +1,8 @@
-"""SDB — helpers de fetch com rate-limit (compartilhados).
+"""SDB: shared rate-limited fetch helpers.
 
-`paginate` varre um endpoint paginado em ondas, deduplica por `mint` em tempo real e
-para quando uma onda não traz nenhum mint novo (detecta a cauda-fantasma da API, que
-repete os mesmos itens além do fim).
+`paginate` scans a paginated endpoint in waves, dedupes by `mint` on the fly and
+stops when a wave brings no new mint (detects the API phantom tail, which
+repeats the same items past the end).
 """
 import concurrent.futures
 import json
@@ -14,8 +14,8 @@ BASE = "https://www.stonkfun.xyz/api/public/v1"
 TIMEOUT = 40
 MAX_RETRIES = 6
 WORKERS = 8
-WAVE = 40          # páginas por onda
-MAX_PAGES = 2000   # teto de segurança
+WAVE = 40          # pages per wave
+MAX_PAGES = 2000   # safety cap
 
 
 def fetch_json(url):
@@ -33,12 +33,12 @@ def fetch_json(url):
             raise
         except (urllib.error.URLError, TimeoutError, ConnectionError):
             time.sleep(min((2 ** attempt) + 1, 30.0))
-    raise RuntimeError(f"falhou após {MAX_RETRIES} tentativas: {url}")
+    raise RuntimeError(f"failed after {MAX_RETRIES} attempts: {url}")
 
 
 def paginate(endpoint, key, page_size=100, workers=WORKERS, max_pages=None,
              log=lambda *a, **k: None):
-    """Varre `GET /{endpoint}`, extrai `data.{key}`, dedupe por mint, retorna itens únicos."""
+    """Scan `GET /{endpoint}`, extract `data.{key}`, dedupe by mint, return unique items."""
     seen = set()
     items = []
     page = 1
@@ -62,11 +62,11 @@ def paginate(endpoint, key, page_size=100, workers=WORKERS, max_pages=None,
                         seen.add(m)
                     items.append(it)
                     new += 1
-        log(f"  /{endpoint} páginas {pages[0]}-{pages[-1]}: {len(items)} itens "
+        log(f"  /{endpoint} pages {pages[0]}-{pages[-1]}: {len(items)} items "
             f"({time.time()-t0:.0f}s)")
         page += WAVE
         if new == 0:
-            log(f"  /{endpoint}: cauda-fantasma detectada em {page-WAVE}, parando")
+            log(f"  /{endpoint}: phantom tail detected at {page-WAVE}, stopping")
             break
     return items
 

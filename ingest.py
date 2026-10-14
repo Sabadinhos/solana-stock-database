@@ -1,11 +1,11 @@
-"""SDB — ingestão (D1-7): carrega o scan em SQLite + busca rewards (M3) e launches (M4).
+"""SDB: ingestion (D1-7). Loads the scan into SQLite + fetches rewards (M3) and launches (M4).
 
-Fluxo:
-  1. lê data/raw/tokens.jsonl (dedupe por mint), monta o grafo de lastro;
-  2. grava tokens (catálogo + cadeia) e o primeiro snapshot (série temporal);
-  3. busca GET /rewards -> tabela rewards;
-  4. busca GET /launches -> tabela launches;
-  5. registra um ciclo em `cycles`.
+Flow:
+  1. read data/raw/tokens.jsonl (dedupe by mint), build the backing graph;
+  2. write tokens (catalog + chain) and the first snapshot (time series);
+  3. fetch GET /rewards -> rewards table;
+  4. fetch GET /launches -> launches table;
+  5. record a cycle in `cycles`.
 """
 import json
 import os
@@ -125,9 +125,9 @@ def load_tokens(conn, captured_at):
 
 
 def load_rewards(conn, captured_at):
-    # /rewards NÃO pagina o array `data.launches`: devolve os ~12.790 reward coins
-    # inteiros em qualquer request. Uma chamada só basta (recentDistributions é paginado
-    # e é ignorado aqui).
+    # /rewards does NOT paginate the `data.launches` array: it returns all ~12,790 reward coins
+    # on any request. One call is enough (recentDistributions is paginated
+    # and ignored here).
     d = fetch_json(f"{BASE}/rewards?page=1&pageSize=1")
     items = d.get("data", {}).get("launches", [])
     for it in items:
@@ -184,7 +184,7 @@ def main():
     n_launches = load_launches(conn)
     log(f"launches: {n_launches} ({time.time()-t0:.1f}s)")
 
-    # backfill: /tokens não devolve `creator` para ~95% dos tokens; /launches tem.
+    # backfill: /tokens omits `creator` for ~95% of tokens; /launches has it.
     conn.execute(
         """UPDATE tokens SET creator = (
              SELECT l.creator FROM launches l WHERE l.mint = tokens.mint
@@ -217,12 +217,12 @@ def main():
     )
     conn.commit()
 
-    # resumo
+    # summary
     tot = conn.execute("SELECT COUNT(*) c FROM tokens").fetchone()["c"]
     snp = conn.execute("SELECT COUNT(*) c FROM snapshots").fetchone()["c"]
     rew = conn.execute("SELECT COUNT(*) c FROM rewards").fetchone()["c"]
     lau = conn.execute("SELECT COUNT(*) c FROM launches").fetchone()["c"]
-    log(f"\n=== DB pronto === tokens={tot} snapshots={snp} rewards={rew} launches={lau} "
+    log(f"\n=== DB ready === tokens={tot} snapshots={snp} rewards={rew} launches={lau} "
         f"({time.time()-t0:.1f}s)")
     conn.close()
 

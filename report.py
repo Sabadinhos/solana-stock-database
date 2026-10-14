@@ -1,10 +1,10 @@
-"""SDB – gerador de relatório (pulse de 15 min) para posts automatizados.
+"""SDB: report generator (15 min pulse) for automated posts.
 
-Lê só do SQLite (nunca da API). Gera um digest markdown curto com o que
-mudou no intervalo, pronto para virar post (X API) e alimentar a
-newsletter diária/semanal. As integrações de postagem ficam no BACKLOG.
+Reads only from SQLite (never the API). Produces a short markdown digest of what
+changed in the interval, ready to become a post (X API) and feed the
+daily/weekly newsletter. Posting integrations are in the BACKLOG.
 
-Uso: python report.py [minutos]
+Usage: python report.py [minutes]
 """
 import os
 import sys
@@ -30,7 +30,7 @@ def pulse(conn, minutes=15):
     out = []
     out.append(f"# SDB · pulse {minutes}min · {time.strftime('%H:%MZ', time.gmtime())}")
 
-    # 1. novos lançamentos no intervalo
+    # 1. new launches in the interval
     new_launches = conn.execute(
         "SELECT COUNT(*) c FROM launches WHERE created_at >= ?", (cutoff,)
     ).fetchone()["c"]
@@ -42,10 +42,10 @@ def pulse(conn, minutes=15):
     ).fetchall()
     if new_launches:
         tops = " · ".join(f"{r['term']} {r['c']}" for r in new_by_terminal)
-        out.append(f"\n**Novos memstocks ({minutes}min): {new_launches}**\n> {tops}")
+        out.append(f"\n**New memstocks ({minutes}min): {new_launches}**\n> {tops}")
 
-    # 2. top movers (variação 24h) – sem recomendar, só fato
-    # top movers: filtra micro-caps (mcap > $10k), dedupe por símbolo, cap de exibição
+    # 2. top movers (24h change): no recommendation, facts only
+    # top movers: filter micro-caps (mcap > $10k), dedupe by symbol, display cap
     rows = conn.execute(
         """SELECT symbol, terminal_symbol, price_change_24h, market_cap_usd
            FROM tokens WHERE price_change_24h IS NOT NULL
@@ -54,7 +54,7 @@ def pulse(conn, minutes=15):
     ).fetchall()
     seen = {}
     for r in rows:
-        seen.setdefault(r["symbol"], r)  # mantém o de maior mcap (vem primeiro)
+        seen.setdefault(r["symbol"], r)  # keep the highest mcap (comes first)
     movers = sorted(seen.values(), key=lambda x: -abs(x["price_change_24h"]))[:5]
     if movers:
         lines = []
@@ -65,7 +65,7 @@ def pulse(conn, minutes=15):
             lines.append(f"{r['symbol']} ({r['terminal_symbol']}) {arrow}{mag}")
         out.append("\n**Top movers 24h**\n> " + " · ".join(lines))
 
-    # 3. atenção por ativo terminal (launches acumulados na janela)
+    # 3. attention per terminal asset (launches accumulated in the window)
     attn = conn.execute(
         """SELECT COALESCE(t2.terminal_symbol, l.quote_symbol) term, COUNT(*) c
            FROM launches l LEFT JOIN tokens t2 ON t2.mint = l.quote_mint
@@ -73,25 +73,25 @@ def pulse(conn, minutes=15):
         (cutoff,),
     ).fetchall()
     if attn:
-        out.append("\n**Atenção por ativo (lançamentos)**\n> "
+        out.append("\n**Attention by asset (launches)**\n> "
                    + " · ".join(f"{r['term']} {r['c']}" for r in attn))
 
-    # 4. rendimento em ação (maiores reward coins, vitalício)
+    # 4. yield in stock (largest reward coins, lifetime)
     yield_rows = conn.execute(
         """SELECT r.quote_symbol, SUM(r.distributed_tokens) y, COUNT(*) coins
            FROM rewards r WHERE r.distributed_tokens > 0
            GROUP BY r.quote_symbol ORDER BY y DESC LIMIT 5"""
     ).fetchall()
     if yield_rows:
-        out.append("\n**Maiores pagadores (rendimento em ação, vitalício)**\n> "
+        out.append("\n**Top payers (yield in stock, lifetime)**\n> "
                    + " · ".join(f"{r['quote_symbol']} {r['y']:,.0f}" for r in yield_rows))
 
-    # 5. eventos on-chain recentes (dev actions)
+    # 5. recent on-chain events (dev actions)
     ev = conn.execute(
         """SELECT COUNT(*) c, kind FROM token_events GROUP BY kind ORDER BY c DESC"""
     ).fetchall()
     if ev:
-        out.append("\n**Eventos on-chain (dev)**\n> "
+        out.append("\n**On-chain events (dev)**\n> "
                    + " · ".join(f"{r['kind']} {r['c']}" for r in ev))
 
     return "\n".join(out)
@@ -109,7 +109,7 @@ def main():
         f.write(text + "\n")
     conn.close()
     print(text)
-    print(f"\n[salvo em {path}]")
+    print(f"\n[saved to {path}]")
 
 
 if __name__ == "__main__":
