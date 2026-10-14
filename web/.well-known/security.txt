@@ -1,0 +1,4 @@
+Contact: mailto:security@example.invalid
+Expires: 2027-10-14T00:00:00Z
+Policy: https://example.invalid/about
+Preferred-Languages: en, pt-BR

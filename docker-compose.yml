@@ -1,0 +1,40 @@
+services:
+  sdb:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SDB_DATA_DIR: /app/data
+      SDB_DISABLE_EMBEDDED_SCHEDULER: "1"
+      DBC_ENABLED: "0"
+    ports:
+      - "127.0.0.1:${HOST_PORT:-8090}:8080"
+    volumes:
+      - sdb_data:/app/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+
+  scheduler:
+    profiles: ["collection"]
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SDB_DATA_DIR: /app/data
+      DBC_ENABLED: "1"
+      DBC_EVERY_CYCLES: "6"
+      SCHEDULE_SEC: "900"
+    volumes:
+      - sdb_data:/app/data
+    command: ["python", "scheduler.py", "900"]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 2g
+
+volumes:
+  sdb_data:

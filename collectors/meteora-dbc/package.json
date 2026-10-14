@@ -1,0 +1,25 @@
+{
+  "name": "meteora-dbc",
+  "version": "1.0.0",
+  "description": "Bounded Meteora DBC account collector for SDB",
+  "main": "collector.js",
+  "private": true,
+  "scripts": {
+    "collect": "node collector.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@coral-xyz/anchor": "0.31.1",
+    "@meteora-ag/dynamic-bonding-curve-sdk": "1.5.12",
+    "@solana/spl-token": "0.4.14",
+    "@solana/web3.js": "1.99.0",
+    "bigint-buffer": "1.1.5",
+    "bs58": "6.0.0",
+    "toml": "5.0.0",
+    "uuid": "11.1.1"
+  }
+}

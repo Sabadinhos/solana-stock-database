@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /sdb-qa
+Disallow: /sdb-lab
+Disallow: /rollback
+Disallow: /backups
+Disallow: /deploy-backups
+Disallow: /data/
+
+Sitemap: https://example.invalid/sitemap.xml
+
+# Public product surfaces: home, market board, token records, asset intelligence, creators and documentation.
+# This project is independent and read-only; no wallet or transaction actions are provided.
+
+# Independent, read-only Solana Stock Database. Not operated by or affiliated with the Solana Foundation or Solana Labs. No wallet connection, token sale, giveaway, support service, or financial advice.
